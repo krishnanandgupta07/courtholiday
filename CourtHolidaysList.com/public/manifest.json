@@ -1,0 +1,24 @@
+{
+  "name": "CourtHoliday",
+  "short_name": "CourtHoliday",
+  "description": "Indian court holiday calendars for Supreme Court, High Courts, District Courts and Tribunals.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4EFE4",
+  "theme_color": "#1a2744",
+  "lang": "en-IN",
+  "icons": [
+    {
+      "src": "/images/CourtLiveLogo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/CourtLiveLogo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

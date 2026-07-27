@@ -7,6 +7,10 @@ import {
 } from '../api/client'
 import type { BenchOption, CourtOption, Holiday } from '../types/api'
 import { todayKey, yearOptions } from '../utils/calendar'
+import {
+  clampToSelectableYear,
+  filterSelectableYears,
+} from '../utils/yearAvailability'
 
 interface AsyncState {
   loading: boolean
@@ -62,10 +66,16 @@ export function useHolidays() {
     try {
       const result = await fetchYears()
       if (result.length === 0) return
-      setYears(result)
-      setSelectedYear((prev) =>
-        result.includes(prev) ? prev : pickDefaultYear(result, currentYear),
-      )
+      // Hide next year until 15 December even if the API already has rows
+      const visible = filterSelectableYears(result)
+      if (visible.length === 0) return
+      setYears(visible)
+      setSelectedYear((prev) => {
+        const clamped = clampToSelectableYear(prev)
+        return visible.includes(clamped)
+          ? clamped
+          : pickDefaultYear(visible, currentYear)
+      })
     } catch {
       // Keep local yearOptions fallback if the years endpoint is unavailable
     }
@@ -95,17 +105,27 @@ export function useHolidays() {
     [benchesByCourt, selectedCourt],
   )
 
+  const selectedCourtRef = useRef(selectedCourt)
+  selectedCourtRef.current = selectedCourt
+
   const selectCourt = useCallback((courtName: string) => {
+    if (selectedCourtRef.current === courtName) return
+    selectedCourtRef.current = courtName
     setSelectedCourt(courtName)
     setSelectedBenchId(null)
   }, [])
 
   const loadHolidays = useCallback(async () => {
     if (!selectedCourt || selectedBenchId == null) {
-      setHolidaysState({
-        loading: false,
-        error: 'Select a court and bench before viewing the calendar.',
-      })
+      // Keep loading UI if a court switch is mid-flight (bench not chosen yet)
+      setHolidaysState((prev) =>
+        prev.loading
+          ? prev
+          : {
+              loading: false,
+              error: 'Select a court and bench before viewing the calendar.',
+            },
+      )
       return
     }
 
@@ -114,7 +134,20 @@ export function useHolidays() {
     const benchName =
       benches.find((b) => b.id === selectedBenchId)?.name ?? 'Bench'
 
+    // Clear previous court data and show skeleton immediately
+    setHolidays([])
+    setHasLoadedHolidays(false)
+    setLoadedDate(null)
+    setViewLabel(null)
     setHolidaysState({ loading: true, error: null })
+
+    // Yield so React can paint the loading skeleton (incl. instant cache hits)
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve())
+      })
+    })
+    if (generation !== loadGeneration.current) return
 
     try {
       let data = holidayCache.get(key)
@@ -152,7 +185,16 @@ export function useHolidays() {
     }
 
     const generation = ++loadGeneration.current
+    setHolidays([])
+    setHasLoadedHolidays(false)
+    setLoadedDate(null)
+    setViewLabel(null)
     setHolidaysState({ loading: true, error: null })
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve())
+    })
+    if (generation !== loadGeneration.current) return
 
     try {
       let data = dateHolidayCache.get(selectedDate)
@@ -188,13 +230,18 @@ export function useHolidays() {
     void loadHolidaysByDate()
   }, [loadHolidaysByDate, selectedDate])
 
-  const clearHolidayResults = useCallback(() => {
+  const clearHolidayResults = useCallback((options?: { pending?: boolean }) => {
+    // Invalidate in-flight fetches, then optionally keep a loading skeleton visible
+    // while the next court/bench/year request is prepared (avoids a blank flash).
     loadGeneration.current += 1
     setHolidays([])
     setHasLoadedHolidays(false)
     setLoadedDate(null)
     setViewLabel(null)
-    setHolidaysState({ loading: false, error: null })
+    setHolidaysState({
+      loading: options?.pending === true,
+      error: null,
+    })
   }, [])
 
   return {

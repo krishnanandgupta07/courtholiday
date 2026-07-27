@@ -1,17 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import type { CourtCategory, ViewScope } from '../types/api'
 import {
   defaultViewMonth,
   filterHolidaysByMonth,
 } from '../utils/calendar'
 import { filterCourtsByCategory, filterHolidayCourtName } from '../utils/courtCategory'
+import { courtHolidayPath } from '../seo/slugs'
+import { clampToSelectableYear, isYearSelectable } from '../utils/yearAvailability'
 import { AppHeader } from './AppHeader'
 import { CalendarPanel } from './CalendarPanel'
 import { DateWiseView } from './DateWiseView'
 import { DocketList } from './DocketList'
+import { AppDownloadBanner } from './AppDownloadBanner'
 import { Footer } from './Footer'
 import { SelectorBar } from './SelectorBar'
-import { ViewScopeBar } from './ViewScopeBar'
 import { useHolidays } from '../hooks/useHolidays'
 
 /** Supreme Court only: hides court/bench pickers (single court & bench; year selector only) */
@@ -27,13 +30,45 @@ const HC_DEFAULT_BENCH = 'Hyderabad'
 /** Supreme Court auto-selection — picks the first available court/bench */
 const SC_DEFAULT_COURT = 'Supreme Court of India'
 
+export interface CourtHolidayCalendarProps {
+  onContactClick?: () => void
+  onHomeClick?: () => void
+  /** URL-driven court category (SEO routes). */
+  initialCategory?: CourtCategory
+  /** URL-driven court name (exact or partial match). */
+  initialCourtName?: string
+  /** URL-driven preferred bench name substring. */
+  initialBenchName?: string
+  /** URL-driven year. */
+  initialYear?: number
+  /** Single page H1 for SEO (visually compact under breadcrumbs). */
+  pageTitle?: string
+  /** Breadcrumbs / SEO chrome above the view-scope bar. */
+  topSlot?: ReactNode
+  /** FAQ / internal links above the footer. */
+  bottomSlot?: ReactNode
+  /** Optional callback when holidays load (for live FAQ enrichment). */
+  onHolidaysChange?: (payload: {
+    holidays: ReturnType<typeof useHolidays>['holidays']
+    courtName: string
+    year: number
+    courts: ReturnType<typeof useHolidays>['courts']
+    years: number[]
+  }) => void
+}
+
 export function CourtHolidayCalendar({
   onContactClick,
   onHomeClick,
-}: {
-  onContactClick?: () => void
-  onHomeClick?: () => void
-}) {
+  initialCategory = 'high-court',
+  initialCourtName,
+  initialBenchName,
+  initialYear,
+  pageTitle,
+  topSlot,
+  bottomSlot,
+  onHolidaysChange,
+}: CourtHolidayCalendarProps) {
   const {
     years,
     courts,
@@ -60,10 +95,90 @@ export function CourtHolidayCalendar({
     clearHolidayResults,
   } = useHolidays()
 
+  const navigate = useNavigate()
+  const location = useLocation()
+  /** After category switch, sync SEO URL once the auto-selected court is ready */
+  const pendingCategoryUrlSyncRef = useRef(false)
+
+  /** Navigate to the SEO path for the current court + year (e.g. /delhi-high-court-holidays-2026) */
+  const goToCourtUrl = useCallback(
+    (courtName: string, year: number, category: CourtCategory) => {
+      if (!courtName || !Number.isFinite(year)) return
+      const nextPath = courtHolidayPath(courtName, year, category)
+      if (location.pathname === nextPath) return
+      navigate(nextPath)
+    },
+    [location.pathname, navigate],
+  )
+
   const [courtCategory, setCourtCategory] =
-    useState<CourtCategory>('high-court')
+    useState<CourtCategory>(initialCategory)
   const [viewScope, setViewScope] = useState<ViewScope>('month')
-  
+  /**
+   * Explicit reload flag so the skeleton stays visible across court/bench changes
+   * and URL remounts (React can skip painting when cache resolves in one tick).
+   */
+  const [showReloadSkeleton, setShowReloadSkeleton] = useState(
+    () =>
+      Boolean(initialCourtName) ||
+      initialCategory === 'high-court' ||
+      initialCategory === 'supreme-court',
+  )
+
+  useEffect(() => {
+    if (holidaysState.error) {
+      setShowReloadSkeleton(false)
+      return
+    }
+    if (hasLoadedHolidays && !holidaysState.loading) {
+      setShowReloadSkeleton(false)
+    }
+  }, [hasLoadedHolidays, holidaysState.error, holidaysState.loading])
+
+  // When the SEO route court/year changes, show skeleton until data arrives
+  useEffect(() => {
+    if (initialCourtName || initialYear != null) {
+      setShowReloadSkeleton(true)
+    }
+  }, [initialCourtName, initialYear])
+
+  // Apply URL year whenever the route year changes (clamp unreleased next year)
+  useEffect(() => {
+    if (initialYear == null) return
+    const year = clampToSelectableYear(initialYear)
+    setSelectedYear(year)
+
+    // If URL asked for next year before 15 Dec, rewrite to the released year path
+    if (
+      year !== initialYear &&
+      initialCourtName &&
+      isYearSelectable(year)
+    ) {
+      const nextPath = courtHolidayPath(
+        initialCourtName,
+        year,
+        initialCategory,
+      )
+      if (location.pathname !== nextPath) {
+        navigate(nextPath, { replace: true })
+      }
+    }
+  }, [
+    initialCategory,
+    initialCourtName,
+    initialYear,
+    location.pathname,
+    navigate,
+    setSelectedYear,
+  ])
+
+  // Sync category / allow re-auto-select when the SEO route court changes
+  useEffect(() => {
+    setCourtCategory(initialCategory)
+    autoSelectedRef.current = ''
+    benchAutoAppliedRef.current = ''
+  }, [initialCategory, initialCourtName, initialYear])
+
   const isBenchView = viewScope === 'month' || viewScope === 'year'
   const isYearView = viewScope === 'year'
   const isDateView = viewScope === 'date'
@@ -86,8 +201,9 @@ export function CourtHolidayCalendar({
 
   /** True only for Supreme Court — hides court/bench pickers */
   const isAutoCategory = PICKER_HIDDEN_CATEGORIES.includes(courtCategory)
-  /** True for HC + SC — no submit button, auto-loads on selection */
-  const isAutoLoad = AUTO_LOAD_CATEGORIES.includes(courtCategory)
+  /** Auto-load when HC/SC, or when a specific court was provided via SEO URL */
+  const isAutoLoad =
+    AUTO_LOAD_CATEGORIES.includes(courtCategory) || Boolean(initialCourtName)
 
   // ── Auto-select default court + bench when courts load / category changes ──
   const autoSelectedRef = useRef<string>('')
@@ -95,89 +211,102 @@ export function CourtHolidayCalendar({
   const applyAutoDefault = useCallback(() => {
     if (!isAutoLoad || courtsState.loading || courts.length === 0) return
 
-    let targetCourt = ''
-    if (courtCategory === 'high-court') {
-      targetCourt = HC_DEFAULT_COURT
-    } else if (courtCategory === 'supreme-court') {
-      targetCourt = SC_DEFAULT_COURT
-    }
+    // One-shot per category/URL court — do not re-apply after the user picks another court
+    const scopeKey = `${courtCategory}:${initialCourtName ?? ''}`
+    if (autoSelectedRef.current === scopeKey) return
 
-    // Find matching court (case-insensitive partial match)
     const allCategoryCourts = filterCourtsByCategory(courts, courtCategory)
-    const matchedCourt =
-      allCategoryCourts.find((c) =>
-        c.courtName.toLowerCase().includes(targetCourt.toLowerCase()),
-      ) ?? allCategoryCourts[0]
+    let matchedCourt = allCategoryCourts[0]
+
+    if (initialCourtName) {
+      matchedCourt =
+        allCategoryCourts.find(
+          (c) =>
+            c.courtName.toLowerCase() === initialCourtName.toLowerCase(),
+        ) ??
+        allCategoryCourts.find((c) =>
+          c.courtName.toLowerCase().includes(initialCourtName.toLowerCase()),
+        ) ??
+        matchedCourt
+    } else if (courtCategory === 'high-court') {
+      matchedCourt =
+        allCategoryCourts.find((c) =>
+          c.courtName.toLowerCase().includes(HC_DEFAULT_COURT.toLowerCase()),
+        ) ?? matchedCourt
+    } else if (courtCategory === 'supreme-court') {
+      matchedCourt =
+        allCategoryCourts.find((c) =>
+          c.courtName.toLowerCase().includes(SC_DEFAULT_COURT.toLowerCase()),
+        ) ?? matchedCourt
+    }
 
     if (!matchedCourt) return
 
-    const autoKey = `${courtCategory}:${matchedCourt.courtName}`
-    if (autoSelectedRef.current === autoKey && selectedCourt === matchedCourt.courtName) {
-      return
-    }
-
     selectCourt(matchedCourt.courtName)
-    autoSelectedRef.current = autoKey
+    autoSelectedRef.current = scopeKey
   }, [
     courtCategory,
     courts,
     courtsState.loading,
+    initialCourtName,
     isAutoLoad,
     selectCourt,
-    selectedCourt,
   ])
 
-  // Apply auto-default whenever courts load or category changes
   useEffect(() => {
     applyAutoDefault()
   }, [applyAutoDefault])
 
-  // ── Auto-select bench once court is set and benches are available ──
   const benchAutoAppliedRef = useRef<string>('')
 
   useEffect(() => {
     if (!isAutoLoad || !selectedCourt || benches.length === 0) return
 
-    // Always pick a default when no bench is selected (covers court re-select)
+    // Keep user's bench if it still belongs to the current court
     if (selectedBenchId != null) {
       const stillValid = benches.some((b) => b.id === selectedBenchId)
       if (stillValid) {
-        benchAutoAppliedRef.current = `${selectedCourt}:${courtCategory}`
+        benchAutoAppliedRef.current = selectedCourt
         return
       }
     }
 
+    // Prefer URL / default bench only on first apply for this court
     let targetBench = benches[0]
-    if (courtCategory === 'high-court') {
+    const preferDefaultHyderabad =
+      courtCategory === 'high-court' &&
+      !initialCourtName &&
+      selectedCourt.toLowerCase().includes(HC_DEFAULT_COURT.toLowerCase())
+    const preferredBench =
+      initialBenchName ?? (preferDefaultHyderabad ? HC_DEFAULT_BENCH : undefined)
+    if (preferredBench) {
       const found = benches.find((b) =>
-        b.name.toLowerCase().includes(HC_DEFAULT_BENCH.toLowerCase()),
+        b.name.toLowerCase().includes(preferredBench.toLowerCase()),
       )
       if (found) targetBench = found
     }
 
     setSelectedBenchId(targetBench.id)
-    benchAutoAppliedRef.current = `${selectedCourt}:${courtCategory}`
+    benchAutoAppliedRef.current = selectedCourt
   }, [
     benches,
     courtCategory,
+    initialBenchName,
+    initialCourtName,
     isAutoLoad,
     selectedBenchId,
     selectedCourt,
     setSelectedBenchId,
   ])
 
-  // ── Auto-load holidays once bench is selected (for auto categories) ──
-  const autoLoadedKeyRef = useRef<string>('')
   const dateLoadedKeyRef = useRef<string>('')
 
   useEffect(() => {
-    // Don't run bench auto-load in date view — date-wise load takes over
     if (!isAutoLoad || isDateView || selectedBenchId == null || !selectedCourt) {
       return
     }
-    const loadKey = `${selectedBenchId}:${selectedYear}`
-    if (autoLoadedKeyRef.current === loadKey) return
-    autoLoadedKeyRef.current = loadKey
+    // loadHolidays is generation-guarded; calling on bench/year change is enough.
+    // Do not gate with a "already loaded" ref — aborted requests must be allowed to retry.
     void loadHolidays()
   }, [
     isAutoLoad,
@@ -188,33 +317,48 @@ export function CourtHolidayCalendar({
     selectedYear,
   ])
 
+  // Notify parent for live FAQ enrichment
+  useEffect(() => {
+    onHolidaysChange?.({
+      holidays,
+      courtName: selectedCourt,
+      year: selectedYear,
+      courts,
+      years,
+    })
+  }, [courts, holidays, onHolidaysChange, selectedCourt, selectedYear, years])
+
   const handleCourtChange = (courtName: string) => {
     if (courtName === selectedCourt) return
     benchAutoAppliedRef.current = ''
-    autoLoadedKeyRef.current = ''
+    setShowReloadSkeleton(true)
     selectCourt(courtName)
-    if (isAutoLoad) clearHolidayResults()
+    // Show loading skeleton while bench auto-select + holiday fetch run
+    if (isAutoLoad) clearHolidayResults({ pending: true })
+    // Keep browser URL in sync with the selected court (SEO-friendly path)
+    goToCourtUrl(courtName, selectedYear, courtCategory)
   }
 
   const handleBenchChange = (benchId: number | null) => {
     if (benchId === selectedBenchId) return
-    autoLoadedKeyRef.current = ''
+    setShowReloadSkeleton(true)
     setSelectedBenchId(benchId)
-    if (isAutoLoad) clearHolidayResults()
+    if (isAutoLoad) clearHolidayResults({ pending: true })
   }
 
   const handleCourtCategoryChange = (category: CourtCategory) => {
     if (category === courtCategory) return
-    // Reset auto-selection refs so defaults re-apply for new category
     autoSelectedRef.current = ''
     benchAutoAppliedRef.current = ''
-    autoLoadedKeyRef.current = ''
+    pendingCategoryUrlSyncRef.current = true
+    const willAutoLoad =
+      AUTO_LOAD_CATEGORIES.includes(category) || Boolean(initialCourtName)
+    setShowReloadSkeleton(willAutoLoad)
     setCourtCategory(category)
     selectCourt('')
     setSelectedBenchId(null)
-    // Date-wise API returns all courts — keep loaded data and re-filter by category
     if (!isDateView) {
-      clearHolidayResults()
+      clearHolidayResults({ pending: willAutoLoad })
     }
   }
 
@@ -229,18 +373,33 @@ export function CourtHolidayCalendar({
     dateLoadedKeyRef.current = ''
     setSelectedDate(date)
     if (viewScope !== 'date') {
-      clearHolidayResults()
+      setShowReloadSkeleton(true)
+      clearHolidayResults({ pending: true })
       setViewScope('date')
     }
   }
 
-  // When year changes in an auto-load category, allow reload for new year
   const handleYearChange = (year: number) => {
+    // Block selecting next year from the dropdown before the release date
+    if (!isYearSelectable(year)) return
     setSelectedYear(year)
     if (isAutoLoad) {
-      autoLoadedKeyRef.current = '' // allow bench reload for new year
+      setShowReloadSkeleton(true)
+      clearHolidayResults({ pending: true })
+    }
+    // Year change updates path: /delhi-high-court-holidays-2027
+    if (selectedCourt) {
+      goToCourtUrl(selectedCourt, year, courtCategory)
     }
   }
+
+  // After a category tab change, sync URL once auto-select picks a court
+  useEffect(() => {
+    if (!pendingCategoryUrlSyncRef.current) return
+    if (!selectedCourt) return
+    pendingCategoryUrlSyncRef.current = false
+    goToCourtUrl(selectedCourt, selectedYear, courtCategory)
+  }, [courtCategory, goToCourtUrl, selectedCourt, selectedYear])
 
   const handleViewScopeChange = (scope: ViewScope) => {
     if (scope === 'summary') return
@@ -249,14 +408,8 @@ export function CourtHolidayCalendar({
     const leavingDate = viewScope === 'date'
     const enteringDate = scope === 'date'
 
-    // Month ↔ Year share the same holiday payload — keep it.
-    // Date view uses a different API, so clear when crossing that boundary.
     if (leavingDate || enteringDate) {
-      clearHolidayResults()
-      if (leavingDate) {
-        // Force bench calendar reload when returning from date-wise
-        autoLoadedKeyRef.current = ''
-      }
+      clearHolidayResults({ pending: true })
       if (enteringDate) {
         dateLoadedKeyRef.current = ''
       }
@@ -265,7 +418,6 @@ export function CourtHolidayCalendar({
     setViewScope(scope)
   }
 
-  // ── Auto-load date-wise holidays on tab open and date change ──
   useEffect(() => {
     if (!isDateView || !selectedDate) return
     if (dateLoadedKeyRef.current === selectedDate) return
@@ -291,158 +443,244 @@ export function CourtHolidayCalendar({
     setViewScope('month')
   }
 
-  const categoryLabel = courtCategory.replace(/-/g, ' ')
+  const isUnavailableCategory =
+    (courtCategory === 'district-court' || courtCategory === 'tribunal') &&
+    !courtsState.loading &&
+    !courtsState.error &&
+    filteredCourts.length === 0
+
+  /**
+   * Keep calendar/list in a loading state while courts load, bench auto-selects,
+   * or holidays are fetching — avoids a blank flash between court/bench changes.
+   */
+  const awaitingBench =
+    isAutoLoad &&
+    isBenchView &&
+    Boolean(selectedCourt) &&
+    selectedBenchId == null &&
+    !holidaysState.error
+
+  const holidaysLoading =
+    !isUnavailableCategory &&
+    (holidaysState.loading || showReloadSkeleton || awaitingBench)
+
+  const dateHolidaysLoading =
+    holidaysState.loading ||
+    (isDateView && showReloadSkeleton) ||
+    (isDateView &&
+      Boolean(selectedDate) &&
+      !hasLoadedHolidays &&
+      !holidaysState.error)
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-parchment bg-parchment-grid bg-grid text-ink">
-      <AppHeader
-        courtCategory={courtCategory}
-        onCourtCategoryChange={handleCourtCategoryChange}
-        onHomeClick={onHomeClick}
-      />
-      <ViewScopeBar
-        value={viewScope}
-        onChange={handleViewScopeChange}
-      />
+    /*
+      Page scrolls as a whole: first viewport = calendar chrome (header → calendar/list),
+      then FAQ / internal links, then footer — matching pre-SEO layout for the calendar.
+    */
+    <div className="flex min-h-screen w-full flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
+      {/* Locked to one viewport so calendar + list stay fully visible */}
+      <div className="flex h-svh max-h-svh w-full flex-col overflow-hidden">
+        <AppHeader
+          courtCategory={courtCategory}
+          onCourtCategoryChange={handleCourtCategoryChange}
+          viewScope={viewScope}
+          onViewScopeChange={handleViewScopeChange}
+          onHomeClick={onHomeClick}
+        />
+        {topSlot}
+        {pageTitle ? (
+          <div className="shrink-0 border-b border-brassLight/20 bg-parchment px-3 py-1.5 sm:px-4 md:px-6 lg:px-8">
+            <h1 className="font-display text-sm leading-tight text-navy sm:text-base md:text-lg">
+              {pageTitle}
+            </h1>
+          </div>
+        ) : null}
 
-      <main
-        className={
-          isYearView
-            ? 'flex min-h-0 w-full flex-1 flex-col overflow-hidden px-3 py-1.5 sm:px-4 md:px-6 lg:px-8'
-            : 'w-full flex-1 overflow-y-auto px-3 py-2 sm:px-4 sm:py-3 md:px-6 lg:px-8'
-        }
-      >
-        {isDateView ? (
-          <DateWiseView
-            selectedDate={selectedDate}
-            loadedDate={loadedDate}
-            holidays={visibleHolidays}
-            loading={holidaysState.loading}
-            error={holidaysState.error}
-            hasLoaded={hasLoadedHolidays}
-            onDateChange={handleDateChange}
-            onRetry={() => {
-              dateLoadedKeyRef.current = ''
-              retryHolidaysByDate()
-            }}
-          />
-        ) : (
-          <>
-            {courtsState.error && isBenchView && (
-              <div
-                role="alert"
-                className="mb-3 flex flex-wrap items-center justify-between gap-3 border border-burgundy/30 bg-burgundyDim px-4 py-3"
+        <main
+          className={
+            isYearView
+              ? 'flex min-h-0 w-full flex-1 flex-col overflow-hidden px-3 py-1.5 sm:px-4 md:px-6 lg:px-8'
+              : 'flex min-h-0 w-full flex-1 flex-col overflow-hidden px-3 py-2 sm:px-4 sm:py-3 md:px-6 lg:px-8'
+          }
+        >
+          {isDateView ? (
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <DateWiseView
+                selectedDate={selectedDate}
+                loadedDate={loadedDate}
+                holidays={visibleHolidays}
+                loading={dateHolidaysLoading}
+                error={holidaysState.error}
+                hasLoaded={hasLoadedHolidays}
+                onDateChange={handleDateChange}
+                onRetry={() => {
+                  dateLoadedKeyRef.current = ''
+                  retryHolidaysByDate()
+                }}
+              />
+            </div>
+          ) : isUnavailableCategory ? (
+            <div className="flex min-h-0 flex-1 items-center justify-center px-3 py-6 sm:px-4">
+              <section
+                aria-labelledby="coming-soon-heading"
+                className="w-full max-w-xl border border-brassLight/50 bg-parchment/90 px-6 py-10 text-center shadow-slip sm:px-10"
               >
-                <p className="font-body text-sm text-burgundy">
-                  Could not load courts: {courtsState.error}
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">
+                  Coming soon
                 </p>
-                <button
-                  type="button"
-                  onClick={() => void reloadCourts()}
-                  className="min-h-10 rounded-sm border border-burgundy/40 bg-parchment px-4 py-2 font-body text-sm text-burgundy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-burgundy"
+                <h2
+                  id="coming-soon-heading"
+                  className="mt-2 font-display text-xl text-navy sm:text-2xl"
                 >
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {!courtsState.loading &&
-              isBenchView &&
-              filteredCourts.length === 0 && (
-                <div className="mb-3 border border-brassLight/50 bg-parchmentDim/60 px-4 py-3 font-body text-sm text-inkSoft">
-                  No {categoryLabel} Holidays are available. We are working on it.
-                  Try High Court or Supreme Court. We will update the holidays as soon as possible.
+                  {courtCategory === 'district-court'
+                    ? 'District Court holidays'
+                    : 'Tribunal holidays'}
+                </h2>
+                <p className="mt-3 font-body text-sm leading-relaxed text-inkSoft">
+                  Holiday calendars for{' '}
+                  {courtCategory === 'district-court'
+                    ? 'District Courts'
+                    : 'Tribunals'}{' '}
+                  are not available yet. We are preparing this data and will
+                  publish it here soon.
+                </p>
+                <p className="mt-2 font-body text-sm text-inkSoft">
+                  In the meantime, explore Supreme Court or High Court holiday
+                  lists.
+                </p>
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCourtCategoryChange('supreme-court')}
+                    className="min-h-9 rounded-sm border border-brassLight/50 bg-parchment px-3 py-1.5 font-body text-sm font-semibold text-navy transition hover:border-brass hover:bg-parchmentDim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
+                  >
+                    Supreme Court
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCourtCategoryChange('high-court')}
+                    className="min-h-9 rounded-sm border border-brass bg-brass px-3 py-1.5 font-body text-sm font-semibold text-navyDeep transition hover:bg-brassLight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
+                  >
+                    High Court
+                  </button>
+                </div>
+              </section>
+            </div>
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col">
+              {courtsState.error && isBenchView && (
+                <div
+                  role="alert"
+                  className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-3 border border-burgundy/30 bg-burgundyDim px-4 py-3"
+                >
+                  <p className="font-body text-sm text-burgundy">
+                    Could not load courts: {courtsState.error}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void reloadCourts()}
+                    className="min-h-10 rounded-sm border border-burgundy/40 bg-parchment px-4 py-2 font-body text-sm text-burgundy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-burgundy"
+                  >
+                    Retry
+                  </button>
                 </div>
               )}
 
-            <div
-              className={[
-                'grid w-full min-h-0 gap-2 items-stretch',
-                isYearView && showSidebar
-                  ? 'h-full grid-cols-1 lg:grid-cols-[minmax(11rem,12rem)_minmax(0,1fr)]'
-                  : showSidebar && showDocketList
-                    ? 'grid-cols-1 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1.4fr)_minmax(16rem,1fr)]'
-                    : showSidebar
-                      ? 'grid-cols-1 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)]'
-                      : showDocketList
-                        ? 'grid-cols-1 md:grid-cols-2'
-                        : 'grid-cols-1',
-              ].join(' ')}
-            >
-              {courtsState.loading && isBenchView && !courtsState.error && (
-                <div
-                  className="h-40 animate-pulse border border-brassLight/40 bg-parchmentDim/60 lg:h-auto lg:min-h-[12rem]"
-                  aria-busy="true"
-                  aria-label="Loading court selectors"
-                />
-              )}
-
-              {showSidebar && (
-                <SelectorBar
-                  courts={filteredCourts}
-                  benches={benches}
-                  years={years}
-                  selectedCourt={selectedCourt}
-                  selectedBenchId={selectedBenchId}
-                  selectedYear={selectedYear}
-                  selectedDate={selectedDate}
-                  mode="bench"
-                  isAutoCategory={isAutoCategory}
-                  hideSubmitButton={isAutoLoad}
-                  courtsLoading={courtsState.loading}
-                  holidaysLoading={holidaysState.loading}
-                  onCourtChange={handleCourtChange}
-                  onBenchChange={handleBenchChange}
-                  onYearChange={handleYearChange}
-                  onDateChange={setSelectedDate}
-                  onSubmit={() => void loadHolidays()}
-                />
-              )}
-
               <div
-                className={`flex min-w-0 flex-col ${isYearView ? 'h-full min-h-0' : ''}`}
+                className={[
+                  'grid min-h-0 w-full flex-1 gap-2 items-stretch',
+                  isYearView && showSidebar
+                    ? 'h-full grid-cols-1 lg:grid-cols-[minmax(11rem,12rem)_minmax(0,1fr)]'
+                    : showSidebar && showDocketList
+                      ? 'h-full grid-cols-1 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1.4fr)_minmax(16rem,1fr)]'
+                      : showSidebar
+                        ? 'h-full grid-cols-1 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)]'
+                        : showDocketList
+                          ? 'h-full grid-cols-1 md:grid-cols-2'
+                          : 'h-full grid-cols-1',
+                ].join(' ')}
               >
-                <CalendarPanel
-                  holidays={holidays}
-                  year={calendarYear}
-                  viewMonth={viewMonth}
-                  viewScope={isYearView ? 'year' : 'month'}
-                  loading={holidaysState.loading}
-                  error={holidaysState.error}
-                  hasLoaded={hasLoadedHolidays}
-                  onRetry={retryHolidays}
-                  onViewMonthChange={setViewMonth}
-                  onSelectMonthFromYear={openMonthFromYearView}
-                  onSelectDate={openDateView}
-                />
-              </div>
+                {courtsState.loading && isBenchView && !courtsState.error && (
+                  <div
+                    className="h-40 animate-pulse border border-brassLight/40 bg-parchmentDim/60 lg:h-auto lg:min-h-[12rem]"
+                    aria-busy="true"
+                    aria-label="Loading court selectors"
+                  />
+                )}
 
-              {showDocketList && (
-                <div className="flex min-w-0 flex-col">
-                  <DocketList
-                    holidays={visibleHolidays}
-                    loading={holidaysState.loading}
+                {showSidebar && (
+                  <SelectorBar
+                    courts={filteredCourts}
+                    benches={benches}
+                    years={years}
+                    selectedCourt={selectedCourt}
+                    selectedBenchId={selectedBenchId}
+                    selectedYear={selectedYear}
+                    selectedDate={selectedDate}
+                    mode="bench"
+                    isAutoCategory={isAutoCategory}
+                    hideSubmitButton={isAutoLoad}
+                    courtsLoading={courtsState.loading}
+                    holidaysLoading={holidaysLoading}
+                    onCourtChange={handleCourtChange}
+                    onBenchChange={handleBenchChange}
+                    onYearChange={handleYearChange}
+                    onDateChange={setSelectedDate}
+                    onSubmit={() => void loadHolidays()}
+                  />
+                )}
+
+                <div className="flex min-h-0 min-w-0 flex-col">
+                  <CalendarPanel
+                    holidays={holidays}
+                    year={calendarYear}
+                    viewMonth={viewMonth}
+                    viewScope={isYearView ? 'year' : 'month'}
+                    loading={holidaysLoading}
                     error={holidaysState.error}
                     hasLoaded={hasLoadedHolidays}
-                    year={viewLabel?.year ?? null}
-                    viewMonth={viewMonth}
-                    viewScope={viewScope}
-                    selectedDate={loadedDate ?? selectedDate}
-                    courtName={viewLabel?.court ?? selectedCourt}
-                    benchName={
-                      viewLabel?.bench ??
-                      benches.find((bench) => bench.id === selectedBenchId)?.name ??
-                      null
-                    }
                     onRetry={retryHolidays}
+                    onViewMonthChange={setViewMonth}
+                    onSelectMonthFromYear={openMonthFromYearView}
+                    onSelectDate={openDateView}
                   />
                 </div>
-              )}
-            </div>
-          </>
-        )}
-      </main>
 
+                {showDocketList && (
+                  <div className="flex min-h-0 min-w-0 flex-col">
+                    <DocketList
+                      holidays={visibleHolidays}
+                      loading={holidaysLoading}
+                      error={holidaysState.error}
+                      hasLoaded={hasLoadedHolidays}
+                      year={viewLabel?.year ?? null}
+                      viewMonth={viewMonth}
+                      viewScope={viewScope}
+                      selectedDate={loadedDate ?? selectedDate}
+                      courtName={viewLabel?.court ?? selectedCourt}
+                      benchName={
+                        viewLabel?.bench ??
+                        benches.find((bench) => bench.id === selectedBenchId)?.name ??
+                        null
+                      }
+                      onRetry={retryHolidays}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* FAQ / related links sit below the calendar viewport — page scrolls to them */}
+      {bottomSlot ? (
+        <div className="border-t border-brassLight/20 bg-parchment">
+          {bottomSlot}
+        </div>
+      ) : null}
+
+      <AppDownloadBanner />
       <Footer onContactClick={onContactClick} />
     </div>
   )

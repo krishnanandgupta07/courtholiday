@@ -1,6 +1,5 @@
 import type { Holiday } from '../types/api'
 import { formatLongDate } from '../utils/calendar'
-import { holidayTypeLabel } from '../utils/holidayType'
 
 interface DateWiseViewProps {
   selectedDate: string
@@ -15,22 +14,6 @@ interface DateWiseViewProps {
 
 const inputClass =
   'min-h-9 rounded-sm border border-brassLight/70 bg-parchment px-2.5 py-1.5 font-body text-sm text-ink shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass'
-
-function TypeBadge({ type }: { type: Holiday['type'] }) {
-  const isGazetted = type === 'gazetted'
-  return (
-    <span
-      className={`inline-flex shrink-0 items-center rounded-sm border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide ${
-        isGazetted
-          ? 'border-burgundy/50 bg-burgundyDim text-burgundy'
-          : 'border-brass/60 bg-brassLight/40 text-[#6F5630]'
-      }`}
-      title={holidayTypeLabel(type)}
-    >
-      {isGazetted ? 'Gaz.' : 'Res.'}
-    </span>
-  )
-}
 
 export function DateWiseView({
   selectedDate,
@@ -131,12 +114,9 @@ export function DateWiseView({
                 key={`${holiday.id}-${holiday.benchId ?? index}`}
                 className="flex min-h-0 flex-col border border-brassLight/50 bg-parchment px-2 py-1.5"
               >
-                <div className="flex items-center justify-between gap-1">
-                  <span className="font-mono text-[10px] text-inkSoft">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <TypeBadge type={holiday.type} />
-                </div>
+                <span className="font-mono text-[10px] text-inkSoft">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
                 <p
                   className="mt-0.5 line-clamp-2 font-body text-xs font-semibold leading-tight text-navy"
                   title={holiday.courtName ?? undefined}

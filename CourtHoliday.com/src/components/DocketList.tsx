@@ -25,14 +25,21 @@ interface DocketListProps {
 
 function SkeletonSlips() {
   return (
-    <ul className="space-y-1" aria-hidden>
-      {Array.from({ length: 4 }).map((_, i) => (
-        <li
-          key={i}
-          className="h-11 animate-pulse border border-brassLight/40 bg-parchmentDim/70"
-        />
-      ))}
-    </ul>
+    <div className="relative min-h-[12rem]" aria-busy="true" aria-label="Loading holiday list">
+      <ul className="space-y-1" aria-hidden>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <li
+            key={i}
+            className="h-11 animate-pulse border border-brassLight/40 bg-brassLight/25"
+          />
+        ))}
+      </ul>
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <p className="rounded-sm border border-brassLight/50 bg-parchment/95 px-3 py-1.5 font-body text-sm font-semibold text-navy shadow-slip">
+          Loading…
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -143,7 +150,7 @@ export function DocketList({
   return (
     <section
       aria-label={isDateView ? 'Date-wise court holiday list' : 'Holiday docket list'}
-      className="flex flex-col border border-brassLight/60 bg-parchment/80 shadow-slip"
+      className="flex h-full min-h-0 flex-col border border-brassLight/60 bg-parchment/80 shadow-slip"
     >
       <header className="flex shrink-0 items-start justify-between gap-2 border-b border-brassLight/50 bg-navy px-3 py-2 text-parchment">
         <div className="min-w-0">
@@ -176,7 +183,7 @@ export function DocketList({
 
       <div
         ref={scrollRef}
-        className="p-1.5 md:p-2"
+        className="min-h-0 flex-1 overflow-y-auto p-1.5 md:p-2"
       >
         {loading && <SkeletonSlips />}
 

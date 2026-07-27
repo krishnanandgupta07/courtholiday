@@ -1,4 +1,5 @@
 import type { Holiday } from '../types/api'
+import { filterSelectableYears } from './yearAvailability'
 
 export const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
@@ -101,7 +102,14 @@ export function buildMonthGrid(
 }
 
 export function yearOptions(center = new Date().getFullYear()): number[] {
-  return [center - 2, center - 1, center, center + 1, center + 2]
+  // Local fallback list — still respects the 15 Dec next-year release gate
+  return filterSelectableYears([
+    center - 2,
+    center - 1,
+    center,
+    center + 1,
+    center + 2,
+  ])
 }
 
 export function formatMonthName(month: number): string {

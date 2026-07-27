@@ -1,13 +1,48 @@
 import type { ReactNode } from 'react'
-import type { CourtCategory } from '../types/api'
+import type { CourtCategory, ViewScope } from '../types/api'
 import { COURT_CATEGORIES } from '../utils/courtCategory'
 
+const COURTLIVESTREAM_URL =
+  import.meta.env.VITE_COURTLIVESTREAM_URL?.trim() ||
+  'https://www.courtlivestream.com'
 const ANDROID_APP_URL =
   import.meta.env.VITE_ANDROID_APP_URL?.trim() ||
   'https://play.google.com/store/apps/details?id=com.courtlivestream.app&pcampaignid=web_share&pli=1'
 const IOS_APP_URL =
   import.meta.env.VITE_IOS_APP_URL?.trim() ||
   'https://apps.apple.com/us/app/courtlive-stream/id6764580795'
+
+const VIEW_TABS: {
+  id: ViewScope
+  label: string
+  shortLabel: string
+  hint: string
+}[] = [
+  {
+    id: 'month',
+    label: 'Month wise',
+    shortLabel: 'Month',
+    hint: 'View one month at a time',
+  },
+  {
+    id: 'year',
+    label: 'Year wise',
+    shortLabel: 'Year',
+    hint: 'View the full year calendar',
+  },
+  {
+    id: 'date',
+    label: 'Date wise',
+    shortLabel: 'Date',
+    hint: 'Look up holidays for a specific date',
+  },
+  {
+    id: 'summary',
+    label: 'Summary',
+    shortLabel: 'Summary',
+    hint: 'Coming soon',
+  },
+]
 
 function GooglePlayIcon({ className }: { className?: string }) {
   return (
@@ -69,12 +104,16 @@ function StoreBadge({
 interface AppHeaderProps {
   courtCategory: CourtCategory
   onCourtCategoryChange: (category: CourtCategory) => void
+  viewScope: ViewScope
+  onViewScopeChange: (scope: ViewScope) => void
   onHomeClick?: () => void
 }
 
 export function AppHeader({
   courtCategory,
   onCourtCategoryChange,
+  viewScope,
+  onViewScopeChange,
   onHomeClick,
 }: AppHeaderProps) {
   return (
@@ -89,72 +128,131 @@ export function AppHeader({
       />
 
       <div className="relative flex w-full flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-1.5 sm:px-4 md:flex-nowrap md:gap-3 md:px-6 md:py-2 lg:px-8">
-        {/* Brand */}
-        <button
-          type="button"
-          onClick={onHomeClick}
-          className="flex min-w-0 shrink-0 items-center gap-2 rounded-sm text-left transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-1 focus-visible:ring-offset-navy md:gap-2.5"
-          aria-label="Go to home page"
-        >
-          <img
-            src="/images/CourtLiveLogo.jpeg"
-            alt="Court Live"
-            className="h-5 w-auto shrink-0 rounded-sm border border-brassLight/30 bg-parchment object-contain shadow-sm sm:h-6"
-            width={60}
-            height={24}
-          />
-          <div className="min-w-0">
-            <h1 className="truncate font-display text-xs leading-tight tracking-tight text-parchment sm:text-sm md:text-base">
-              Court Holidays Calendar
-            </h1>
-          </div>
-        </button>
-
-        {/* Court type selection — centered */}
-        <nav
-          className="order-3 w-full md:order-none md:mx-auto md:w-auto md:flex-1 md:overflow-visible"
-          aria-label="Court type"
-        >
-          <div
-            className="flex w-full items-center justify-start gap-0.5 overflow-x-auto rounded-sm border border-brassLight/35 bg-navyDeep/45 p-0.5 md:mx-auto md:w-fit md:justify-center"
-            role="radiogroup"
-            aria-label="Court type"
+        {/* Brand + product attribution (industry standard: "Powered by …") */}
+        <div className="flex min-w-0 shrink-0 items-center gap-2 md:gap-2.5">
+          <button
+            type="button"
+            onClick={onHomeClick}
+            className="flex shrink-0 items-center rounded-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-1 focus-visible:ring-offset-navy"
+            aria-label="Go to home page"
           >
-            {COURT_CATEGORIES.map((option) => {
-              const active = courtCategory === option.id
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  title={option.label}
-                  onClick={() => onCourtCategoryChange(option.id)}
-                  className={[
-                    'min-h-8 shrink-0 whitespace-nowrap rounded-sm px-2 py-1 font-body text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-1 focus-visible:ring-offset-navy sm:px-2.5 sm:text-xs',
-                    active
-                      ? 'bg-brass text-navyDeep shadow-sm'
-                      : 'text-parchment/75 hover:bg-white/5 hover:text-parchment',
-                  ].join(' ')}
-                >
-                  <span className="sm:hidden">
-                    {option.id === 'high-court'
-                      ? 'HC'
-                      : option.id === 'supreme-court'
-                        ? 'SC'
-                        : option.id === 'district-court'
-                          ? 'District'
-                          : 'Tribunal'}
-                  </span>
-                  <span className="hidden sm:inline">{option.label}</span>
-                </button>
-              )
-            })}
+            <img
+              src="/images/CourtLiveLogo.jpeg"
+              alt="CourtHoliday – Indian court holiday calendar logo"
+              className="h-5 w-auto shrink-0 rounded-sm border border-brassLight/30 bg-parchment object-contain shadow-sm sm:h-6"
+              width={60}
+              height={24}
+              loading="eager"
+              decoding="async"
+            />
+          </button>
+          <div className="min-w-0">
+            {/* Brand label is not the page H1 — page wrappers own a single H1 for SEO hierarchy */}
+            <button
+              type="button"
+              onClick={onHomeClick}
+              className="block truncate text-left font-display text-xs leading-tight tracking-tight text-parchment transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-1 focus-visible:ring-offset-navy sm:text-sm md:text-base"
+            >
+              Court Holidays Calendar
+            </button>
+            <p className="mt-0.5 truncate font-mono text-[8px] uppercase tracking-[0.12em] text-brassLight/90 sm:text-[9px]">
+              Powered by{' '}
+              <a
+                href={COURTLIVESTREAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brassLight underline-offset-2 transition hover:text-brass hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brass"
+                aria-label="Visit CourtLiveStream website"
+              >
+                CourtLiveStream
+              </a>
+            </p>
           </div>
-        </nav>
+        </div>
 
-        {/* App download links */}
-        <div className="ml-auto flex shrink-0 items-center gap-1.5 md:ml-0">
+        {/* Court type + view scope stacked and centered under each other */}
+        <div className="order-3 flex w-full flex-col items-stretch gap-1 md:order-none md:mx-auto md:w-auto md:flex-1 md:items-center">
+          <nav aria-label="Court type">
+            <div
+              className="flex w-full items-center justify-start gap-0.5 overflow-x-auto rounded-sm border border-brassLight/35 bg-navyDeep/45 p-0.5 md:mx-auto md:w-fit md:justify-center"
+              role="radiogroup"
+              aria-label="Court type"
+            >
+              {COURT_CATEGORIES.map((option) => {
+                const active = courtCategory === option.id
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    title={option.label}
+                    onClick={() => onCourtCategoryChange(option.id)}
+                    className={[
+                      'min-h-8 shrink-0 whitespace-nowrap rounded-sm px-2 py-1 font-body text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-1 focus-visible:ring-offset-navy sm:px-2.5 sm:text-xs',
+                      active
+                        ? 'bg-brass text-navyDeep shadow-sm'
+                        : 'text-parchment/75 hover:bg-white/5 hover:text-parchment',
+                    ].join(' ')}
+                  >
+                    <span className="sm:hidden">
+                      {option.id === 'high-court'
+                        ? 'HC'
+                        : option.id === 'supreme-court'
+                          ? 'SC'
+                          : option.id === 'district-court'
+                            ? 'District'
+                            : 'Tribunal'}
+                    </span>
+                    <span className="hidden sm:inline">{option.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </nav>
+
+          {/* Month / Year / Date / Summary — directly under court tabs */}
+          <nav aria-label="Calendar view modes">
+            <div
+              className="flex w-full items-center justify-start gap-1 overflow-x-auto md:w-fit md:justify-center"
+              role="tablist"
+            >
+              {VIEW_TABS.map((tab) => {
+                const active = viewScope === tab.id
+                const isSummary = tab.id === 'summary'
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    title={tab.hint}
+                    aria-label={tab.hint}
+                    aria-selected={isSummary ? false : active}
+                    aria-disabled={isSummary || undefined}
+                    onClick={() => {
+                      if (isSummary) return
+                      onViewScopeChange(tab.id)
+                    }}
+                    className={[
+                      'inline-flex min-h-7 shrink-0 items-center rounded-sm border px-2 py-0.5 font-body text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass sm:min-h-8 sm:px-2.5 sm:text-[11px]',
+                      isSummary
+                        ? 'cursor-not-allowed border-brassLight/20 bg-navy/20 text-parchment/40'
+                        : active
+                          ? 'border-brass bg-brass text-navyDeep'
+                          : 'border-brassLight/35 bg-navy/40 text-parchment/85 hover:border-brassLight/60 hover:bg-navy/70',
+                    ].join(' ')}
+                  >
+                    <span className="sm:hidden">{tab.shortLabel}</span>
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </nav>
+        </div>
+
+        {/* App download links + feature promo */}
+        <div className="ml-auto flex shrink-0 items-center gap-2 md:ml-0 lg:gap-3">
           <a
             href={ANDROID_APP_URL}
             target="_blank"
@@ -178,19 +276,24 @@ export function AppHeader({
             Get App
           </a>
 
-          <div className="hidden items-center gap-1.5 lg:flex">
-            <StoreBadge
-              href={IOS_APP_URL}
-              sublabel="Download on the"
-              label="App Store"
-              icon={<AppleIcon className="h-4 w-4 text-brassLight" />}
-            />
-            <StoreBadge
-              href={ANDROID_APP_URL}
-              sublabel="Get it on"
-              label="Google Play"
-              icon={<GooglePlayIcon className="h-4 w-4 text-brassLight" />}
-            />
+          <div className="hidden flex-col items-end gap-1.5 lg:flex">
+            <p className="max-w-[14rem] text-right font-body text-[10px] leading-snug text-parchment/80 xl:text-[11px]">
+              Track your cases & get notified on hearing dates
+            </p>
+            <div className="flex items-center gap-1.5">
+              <StoreBadge
+                href={IOS_APP_URL}
+                sublabel="Download on the"
+                label="App Store"
+                icon={<AppleIcon className="h-4 w-4 text-brassLight" />}
+              />
+              <StoreBadge
+                href={ANDROID_APP_URL}
+                sublabel="Get it on"
+                label="Google Play"
+                icon={<GooglePlayIcon className="h-4 w-4 text-brassLight" />}
+              />
+            </div>
           </div>
         </div>
       </div>

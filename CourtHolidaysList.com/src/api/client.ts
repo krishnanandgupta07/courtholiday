@@ -7,6 +7,7 @@ import type {
   CourtsListResponse,
   Holiday,
   HolidaysResponse,
+  YearsResponse,
 } from '../types/api'
 import { classifyHolidayType } from '../utils/holidayType'
 
@@ -67,6 +68,23 @@ function mapHoliday(raw: ApiHoliday): Holiday {
     benchName: raw.bench?.benchName,
     benchId: raw.benchId ?? raw.bench?.id,
   }
+}
+
+/** Distinct years that have holidays in the database */
+export async function fetchYears(): Promise<number[]> {
+  // GET https://api.courtlivestream.com/api/app/holidays/years
+  const payload = await fetchJson<YearsResponse>(
+    `${API_BASE}/api/app/holidays/years`,
+  )
+
+  if (!payload.success || !Array.isArray(payload.data)) {
+    throw new Error('Unexpected years response')
+  }
+
+  return payload.data
+    .map((year) => Number(year))
+    .filter((year) => Number.isFinite(year))
+    .sort((a, b) => b - a)
 }
 
 /** API call #2 — load holidays for selected bench + year (month / year views) */

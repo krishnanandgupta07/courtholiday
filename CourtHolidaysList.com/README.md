@@ -15,6 +15,7 @@ Base URL: `VITE_API_BASE_URL` (default `https://api.courtlivestream.com`)
 | Purpose | Method | Endpoint |
 |---------|--------|----------|
 | Courts + benches | `GET` | `/api/app/courts/list` |
+| Available years | `GET` | `/api/app/holidays/years` |
 | Holidays | `GET` | `/api/app/holidays?benchId={id}&year={year}` |
 
 Auth: none. CORS: `Access-Control-Allow-Origin: *`. Dates: `YYYY-MM-DD`. Holidays are cached in memory per `benchId:year`.

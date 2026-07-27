@@ -2,6 +2,7 @@ import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'reac
 import { submitContactUs } from '../api/client'
 import type { ContactUsPayload } from '../types/api'
 import { Footer } from './Footer'
+import { AppDownloadBanner } from './AppDownloadBanner'
 
 interface ContactUsPageProps {
   onBack: () => void
@@ -209,10 +210,12 @@ export function ContactUsPage({ onBack, onOpenContact }: ContactUsPageProps) {
           >
             <img
               src="/images/CourtLiveLogo.jpeg"
-              alt="Court Live"
+              alt="CourtHoliday – Indian court holiday calendar logo"
               className="h-6 w-auto shrink-0 rounded-sm border border-brassLight/30 bg-parchment object-contain"
               width={60}
               height={24}
+              loading="eager"
+              decoding="async"
             />
             <div className="min-w-0">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-brassLight">
@@ -466,6 +469,7 @@ export function ContactUsPage({ onBack, onOpenContact }: ContactUsPageProps) {
         </div>
       ) : null}
 
+      <AppDownloadBanner />
       <Footer onContactClick={onOpenContact ?? (() => undefined)} />
     </div>
   )

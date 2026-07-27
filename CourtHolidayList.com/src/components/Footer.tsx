@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 interface FooterProps {
   onContactClick?: () => void
 }
@@ -39,9 +41,12 @@ export function Footer({ onContactClick }: FooterProps) {
                 Contact Us
               </button>
             ) : (
-              <p className="font-body text-[10px] font-medium uppercase tracking-[0.16em] text-brassLight">
+              <Link
+                to="/contact"
+                className="font-body text-[10px] font-medium uppercase tracking-[0.16em] text-brassLight underline-offset-2 transition hover:text-brass hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
+              >
                 Contact Us
-              </p>
+              </Link>
             )}
             <p className="mt-0.5 font-body text-sm text-parchment">
               <span className="text-parchment/80">MAIL:</span>{' '}

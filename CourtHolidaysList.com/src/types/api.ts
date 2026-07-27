@@ -38,6 +38,12 @@ export interface HolidaysResponse {
   data: ApiHoliday[]
 }
 
+/** GET /api/app/holidays/years — distinct years that have holiday rows */
+export interface YearsResponse {
+  success: boolean
+  data: number[]
+}
+
 /** UI-facing holiday type (API has no type field — derived from description) */
 export type HolidayType = 'gazetted' | 'restricted'
 

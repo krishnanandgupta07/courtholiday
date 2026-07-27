@@ -52,7 +52,7 @@ export function SelectorBar({
   return (
     <aside
       aria-label="Court holiday selectors"
-      className="flex h-fit w-full flex-col gap-2.5 self-start border border-brassLight/60 bg-parchment/90 p-2.5 shadow-slip lg:sticky lg:top-[6.75rem]"
+      className="flex h-fit w-full flex-col gap-2.5 self-start border border-brassLight/60 bg-parchment/90 p-2.5 shadow-slip lg:sticky lg:top-0"
     >
       {mode === 'date' ? (
         <>

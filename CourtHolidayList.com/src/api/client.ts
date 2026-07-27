@@ -6,8 +6,8 @@ import type {
   CourtOption,
   CourtsListResponse,
   Holiday,
-  HolidayYearsResponse,
   HolidaysResponse,
+  YearsResponse,
 } from '../types/api'
 import { classifyHolidayType } from '../utils/holidayType'
 
@@ -70,17 +70,19 @@ function mapHoliday(raw: ApiHoliday): Holiday {
   }
 }
 
-/** GET https://api.courtlivestream.com/api/app/holidays/years */
-export async function fetchHolidayYears(): Promise<number[]> {
-  const payload = await fetchJson<HolidayYearsResponse>(
+/** Distinct years that have holidays in the database */
+export async function fetchYears(): Promise<number[]> {
+  // GET https://api.courtlivestream.com/api/app/holidays/years
+  const payload = await fetchJson<YearsResponse>(
     `${API_BASE}/api/app/holidays/years`,
   )
 
   if (!payload.success || !Array.isArray(payload.data)) {
-    throw new Error('Unexpected holiday years response')
+    throw new Error('Unexpected years response')
   }
 
-  return [...payload.data]
+  return payload.data
+    .map((year) => Number(year))
     .filter((year) => Number.isFinite(year))
     .sort((a, b) => b - a)
 }

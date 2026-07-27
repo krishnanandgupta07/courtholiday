@@ -38,8 +38,8 @@ export interface HolidaysResponse {
   data: ApiHoliday[]
 }
 
-/** GET /api/app/holidays/years */
-export interface HolidayYearsResponse {
+/** GET /api/app/holidays/years — distinct years that have holiday rows */
+export interface YearsResponse {
   success: boolean
   data: number[]
 }

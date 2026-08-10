@@ -1,7 +1,7 @@
 {
-  "name": "CourtHoliday",
-  "short_name": "CourtHoliday",
-  "description": "Indian court holiday calendars for Supreme Court, High Courts, District Courts and Tribunals.",
+  "name": "Court Holidays List",
+  "short_name": "Court Holidays",
+  "description": "Indian court holiday calendars for Supreme Court, High Courts, District Courts and Tribunals on courtholidayslist.com.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F4EFE4",

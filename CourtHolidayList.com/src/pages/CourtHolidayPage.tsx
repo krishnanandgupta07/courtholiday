@@ -3,10 +3,9 @@
  * Resolves court from slug, injects SEO meta, breadcrumbs, FAQ, internal links.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { fetchCourtsList, fetchYears } from '../api/client'
 import { CourtHolidayCalendar } from '../components/CourtHolidayCalendar'
-import { Breadcrumbs } from '../components/seo/Breadcrumbs'
 import { FAQSection } from '../components/seo/FAQSection'
 import { InternalLinks } from '../components/seo/InternalLinks'
 import { SEO } from '../components/seo/SEO'
@@ -148,7 +147,7 @@ export function CourtHolidayPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-parchment px-4 text-ink">
         <SEO
-          title="Page Not Found | CourtHoliday"
+          title="Page Not Found | CourtHolidayList"
           description="Unknown court holiday URL."
           noindex
         />
@@ -158,6 +157,14 @@ export function CourtHolidayPage() {
         </Link>
       </div>
     )
+  }
+
+  // Canonical hub for this year’s Supreme Court calendar (Google ranks /supreme-court)
+  if (
+    resolved.category === 'supreme-court' &&
+    year === clampToSelectableYear(new Date().getFullYear())
+  ) {
+    return <Navigate to="/supreme-court" replace />
   }
 
   if (loadError && courts.length === 0) {
@@ -176,7 +183,7 @@ export function CourtHolidayPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-parchment px-4 text-ink">
         <SEO
-          title="Court Not Found | CourtHoliday"
+          title="Court Not Found | CourtHolidayList"
           description="This court holiday page could not be resolved."
           noindex
         />
@@ -208,7 +215,6 @@ export function CourtHolidayPage() {
         onHomeClick={() => navigate('/')}
         onContactClick={() => navigate('/contact')}
         onHolidaysChange={onHolidaysChange}
-        topSlot={<Breadcrumbs items={seo.breadcrumbs} />}
         bottomSlot={
           <>
             <FAQSection faqs={seo.faqs} />

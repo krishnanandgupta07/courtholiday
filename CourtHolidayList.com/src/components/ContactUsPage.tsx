@@ -210,7 +210,7 @@ export function ContactUsPage({ onBack, onOpenContact }: ContactUsPageProps) {
           >
             <img
               src="/images/CourtLiveLogo.jpeg"
-              alt="CourtHoliday – Indian court holiday calendar logo"
+              alt="CourtHolidayList – Indian court holiday calendar logo"
               className="h-6 w-auto shrink-0 rounded-sm border border-brassLight/30 bg-parchment object-contain"
               width={60}
               height={24}

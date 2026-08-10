@@ -60,6 +60,9 @@ export function SEO({
       <meta name="description" content={description} />
       {keywords ? <meta name="keywords" content={keywords} /> : null}
       <meta name="robots" content={robotsContent} />
+      <meta name="googlebot" content={robotsContent} />
+      <meta name="author" content={SITE_NAME} />
+      <meta name="application-name" content={SITE_NAME} />
       <link rel="canonical" href={canonicalUrl} />
 
       {/* Open Graph — Facebook, LinkedIn, WhatsApp previews */}
@@ -70,6 +73,7 @@ export function SEO({
       <meta property="og:description" content={description} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:image" content={imageUrl} />
+      <meta property="og:image:alt" content={title} />
 
       {/* Twitter / X Card */}
       <meta name="twitter:card" content="summary_large_image" />

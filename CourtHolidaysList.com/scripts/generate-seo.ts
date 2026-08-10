@@ -11,11 +11,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildSeoRouteManifest } from '../src/seo/routes'
 import { buildPageSchemas } from '../src/seo/schema'
-import { SITE_URL } from '../src/seo/constants'
+import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from '../src/seo/constants'
 import { absoluteUrl } from '../src/seo/slugs'
 import { seoContentForPath } from '../src/seo/resolvePath'
 import type { CourtOption } from '../src/types/api'
-import { DEFAULT_OG_IMAGE } from '../src/seo/constants'
 import { filterSelectableYears } from '../src/utils/yearAvailability'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -95,7 +94,7 @@ function buildHeadTags(
     <meta name="robots" content="${robots}" />
     <link rel="canonical" href="${canonical}" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="CourtHoliday" />
+    <meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
     <meta property="og:locale" content="en_IN" />
     <meta property="og:title" content="${escapeHtml(seo.title)}" />
     <meta property="og:description" content="${escapeHtml(seo.description)}" />
@@ -142,12 +141,12 @@ function buildPrerenderBody(seo: ReturnType<typeof seoContentForPath>): string {
 function injectHtml(template: string, head: string, body: string): string {
   let html = template
 
-  // Remove default title/description so prerendered tags win
+  // Strip shell defaults so prerendered tags are the only SEO signals
   html = html.replace(/<title>[^<]*<\/title>/i, '')
-  html = html.replace(
-    /<meta\s+name=["']description["'][^>]*>/i,
-    '',
-  )
+  html = html.replace(/<meta\s+name=["']description["'][^>]*>/gi, '')
+  html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, '')
+  html = html.replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, '')
+  html = html.replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, '')
 
   if (html.includes('</head>')) {
     html = html.replace('</head>', `${head}\n</head>`)

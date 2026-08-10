@@ -209,7 +209,7 @@ export function generateCategoryListingSeo(
   const pageSuffix = page > 1 ? ` – Page ${page}` : ''
   return {
     title: `${label} Holiday Lists ${year}${pageSuffix} | ${SITE_NAME}`,
-    description: `Browse ${label.toLowerCase()} holiday calendars for ${year}. View vacations, public holidays and working days across Indian courts.`,
+    description: `Browse ${label.toLowerCase()} holiday calendars for ${year}. Open the interactive calendar above, or pick any court below for vacations and public holidays.`,
     keywords: `${label.toLowerCase()} holidays ${year}, court holiday list, ${SITE_NAME.toLowerCase()}`,
     h1: `${label} Holiday Lists${pageSuffix}`,
     canonicalPath: path,
@@ -220,12 +220,12 @@ export function generateCategoryListingSeo(
     ],
     faqs: [
       {
-        question: `How many ${label.toLowerCase()} are listed?`,
-        answer: `Browse the paginated directory below. Each court links to its ${year} holiday calendar.`,
+        question: `How do I view a ${categorySingular(category).toLowerCase()} holiday calendar?`,
+        answer: `The calendar on this page opens a default court. Use the court selector, or choose another court from the directory below to open its ${year} holiday list.`,
       },
       {
-        question: `How do I open a ${categorySingular(category).toLowerCase()} holiday list?`,
-        answer: `Click any court name to open its holiday calendar for the selected year.`,
+        question: `How many ${label.toLowerCase()} are listed?`,
+        answer: `Browse the paginated directory below. Each court links to its ${year} holiday calendar.`,
       },
     ],
   }
@@ -286,13 +286,15 @@ export function generateYearHubSeo(year: number): SeoContent {
   }
 }
 
-export function generateSupremeHubSeo(): SeoContent {
+export function generateSupremeHubSeo(
+  year = new Date().getFullYear(),
+): SeoContent {
   return {
-    title: `Supreme Court Holidays | ${SITE_NAME}`,
-    description:
-      'View Supreme Court of India holiday calendars by year, including vacations and public holidays.',
-    keywords: 'supreme court holidays, supreme court of india holiday list',
-    h1: 'Supreme Court Holidays',
+    title: `Supreme Court Holidays ${year} | ${SITE_NAME}`,
+    description: `Supreme Court of India holiday calendar ${year} — view monthly and yearly holidays, vacations, and public holidays. Official PDF link included for verification.`,
+    keywords:
+      'supreme court holidays, supreme court of india holiday list, supreme court holiday calendar',
+    h1: `Supreme Court of India Holiday List ${year}`,
     canonicalPath: '/supreme-court',
     breadcrumbs: [
       { name: 'Home', path: '/' },
@@ -300,9 +302,13 @@ export function generateSupremeHubSeo(): SeoContent {
     ],
     faqs: [
       {
-        question: 'Where is the Supreme Court holiday list for the current year?',
+        question: `Where is the Supreme Court holiday list for ${year}?`,
+        answer: `The Supreme Court of India holiday calendar for ${year} is shown on this page. Use Month wise or Year wise view, and open the official PDF from the disclaimer strip when available.`,
+      },
+      {
+        question: 'Does the Supreme Court observe summer and winter vacations?',
         answer:
-          'Choose a year below to open the Supreme Court of India holiday calendar.',
+          'Yes. The Supreme Court holiday list typically includes gazetted holidays and vacation periods. Check the calendar above for exact dates for the selected year.',
       },
     ],
   }

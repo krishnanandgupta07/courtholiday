@@ -92,17 +92,17 @@ export function generateCourtPageSeo(input: CourtPageInput): SeoContent {
   const listingPath = categoryListingPath(category)
   const stateSlug = stateSlugFromCourt(courtName)
 
-  const title = `${courtName} Holiday List ${year} | ${SITE_NAME}`
-  const description = `View and download the official ${courtName} Holiday List for ${year} including public holidays, court vacations and working days.${
-    benchName ? ` Bench: ${benchName}.` : ''
-  }`
+  const title = `${courtName} Holidays ${year} – Holiday List & Calendar | ${SITE_NAME}`
+  const description = `${courtName} holiday list ${year} on Court Holidays List — public holidays, court vacations and closures${
+    benchName ? ` for ${benchName}` : ''
+  }. Check month-wise and year-wise calendars before filings.`
   const keywords = [
     `${courtName.toLowerCase()} holidays ${year}`,
     `${courtName.toLowerCase()} holiday list`,
     `court holidays ${year}`,
     categorySingular(category).toLowerCase(),
     'court vacation',
-    SITE_NAME.toLowerCase(),
+    'courtholidayslist',
   ].join(', ')
 
   const h1 = `${courtName} Holiday List ${year}`
@@ -168,22 +168,21 @@ export function generateCourtPageSeo(input: CourtPageInput): SeoContent {
 /** Home page SEO. */
 export function generateHomeSeo(year = new Date().getFullYear()): SeoContent {
   return {
-    title: `Court Holidays ${year} – Supreme Court, High Courts & District Court Holiday Calendar | ${SITE_NAME}`,
-    description: `Find the latest court holidays in India for the Supreme Court, High Courts, District Courts and Tribunals. View holiday calendars, vacations and court closures for ${year}.`,
-    keywords: `court holidays ${year}, supreme court holidays, high court holidays, district court holidays, court vacation, ${SITE_NAME.toLowerCase()}`,
-    h1: `Indian Court Holiday Calendar ${year}`,
+    title: `Court Holidays ${year} India – Supreme Court, High Courts & District Courts | ${SITE_NAME}`,
+    description: `Court Holidays List for India ${year}: browse Supreme Court, High Court, District Court and Tribunal holiday calendars by state, bench and year on courtholidayslist.com.`,
+    keywords: `court holidays ${year}, court holidays list, supreme court holidays, high court holidays, district court holidays, court vacation india, courtholidayslist`,
+    h1: `Indian Court Holidays List ${year}`,
     canonicalPath: '/',
     breadcrumbs: [{ name: 'Home', path: '/' }],
     faqs: [
       {
-        question: 'Which courts are covered on CourtHoliday?',
-        answer:
-          'CourtHoliday covers the Supreme Court of India, High Courts across states, District Courts, and Tribunals where holiday data is available.',
+        question: `Which courts are covered on ${SITE_NAME}?`,
+        answer: `${SITE_NAME} covers the Supreme Court of India, High Courts across states, District Courts, and Tribunals where holiday data is available.`,
       },
       {
         question: 'How do I find holidays for a specific court?',
         answer:
-          'Select the court category in the header, then choose the court, bench, and year. Or open a direct SEO page such as /delhi-high-court-holidays-2026.',
+          'Select the court category in the header, then choose the court, bench, and year. Or open a direct page such as /delhi-high-court-holidays-2026.',
       },
       {
         question: 'Is the holiday list official?',
@@ -209,8 +208,8 @@ export function generateCategoryListingSeo(
   const pageSuffix = page > 1 ? ` – Page ${page}` : ''
   return {
     title: `${label} Holiday Lists ${year}${pageSuffix} | ${SITE_NAME}`,
-    description: `Browse ${label.toLowerCase()} holiday calendars for ${year}. View vacations, public holidays and working days across Indian courts.`,
-    keywords: `${label.toLowerCase()} holidays ${year}, court holiday list, ${SITE_NAME.toLowerCase()}`,
+    description: `Browse ${label.toLowerCase()} holiday lists for ${year} on Court Holidays List. Open the interactive calendar, or pick any court for vacations and public holidays.`,
+    keywords: `${label.toLowerCase()} holidays ${year}, court holidays list, courtholidayslist`,
     h1: `${label} Holiday Lists${pageSuffix}`,
     canonicalPath: path,
     breadcrumbs: [
@@ -220,12 +219,12 @@ export function generateCategoryListingSeo(
     ],
     faqs: [
       {
-        question: `How many ${label.toLowerCase()} are listed?`,
-        answer: `Browse the paginated directory below. Each court links to its ${year} holiday calendar.`,
+        question: `How do I view a ${categorySingular(category).toLowerCase()} holiday calendar?`,
+        answer: `The calendar on this page opens a default court. Use the court selector, or choose another court from the directory below to open its ${year} holiday list.`,
       },
       {
-        question: `How do I open a ${categorySingular(category).toLowerCase()} holiday list?`,
-        answer: `Click any court name to open its holiday calendar for the selected year.`,
+        question: `How many ${label.toLowerCase()} are listed?`,
+        answer: `Browse the paginated directory below. Each court links to its ${year} holiday calendar.`,
       },
     ],
   }
@@ -240,8 +239,8 @@ export function generateStateSeo(
   const yearPart = year != null ? ` ${year}` : ''
   return {
     title: `${stateLabel} Court Holidays${yearPart} | ${SITE_NAME}`,
-    description: `View court holiday lists for ${stateLabel}${yearPart ? ` in ${year}` : ''}, including High Court and related courts.`,
-    keywords: `${stateLabel.toLowerCase()} court holidays, ${stateSlug} high court holidays, ${SITE_NAME.toLowerCase()}`,
+    description: `${stateLabel} court holidays${yearPart ? ` ${year}` : ''} on Court Holidays List — High Court and related court holiday calendars by bench and year.`,
+    keywords: `${stateLabel.toLowerCase()} court holidays, ${stateSlug} high court holidays, courtholidayslist`,
     h1: `${stateLabel} Court Holidays${yearPart}`,
     canonicalPath: path,
     breadcrumbs: [
@@ -269,8 +268,8 @@ export function generateYearHubSeo(year: number): SeoContent {
   const path = `/years/${year}`
   return {
     title: `Court Holidays ${year} – All Courts | ${SITE_NAME}`,
-    description: `Explore Indian court holiday calendars for ${year} across the Supreme Court, High Courts, District Courts and Tribunals.`,
-    keywords: `court holidays ${year}, high court holidays ${year}, supreme court holidays ${year}`,
+    description: `Explore the ${year} Indian court holidays list across the Supreme Court, High Courts, District Courts and Tribunals on courtholidayslist.com.`,
+    keywords: `court holidays ${year}, high court holidays ${year}, supreme court holidays ${year}, courtholidayslist`,
     h1: `Court Holidays ${year}`,
     canonicalPath: path,
     breadcrumbs: [
@@ -286,13 +285,15 @@ export function generateYearHubSeo(year: number): SeoContent {
   }
 }
 
-export function generateSupremeHubSeo(): SeoContent {
+export function generateSupremeHubSeo(
+  year = new Date().getFullYear(),
+): SeoContent {
   return {
-    title: `Supreme Court Holidays | ${SITE_NAME}`,
-    description:
-      'View Supreme Court of India holiday calendars by year, including vacations and public holidays.',
-    keywords: 'supreme court holidays, supreme court of india holiday list',
-    h1: 'Supreme Court Holidays',
+    title: `Supreme Court Holidays ${year} | ${SITE_NAME}`,
+    description: `Supreme Court of India holiday list ${year} on Court Holidays List — month-wise and year-wise calendars, vacations, and public holidays with official PDF when available.`,
+    keywords:
+      'supreme court holidays, supreme court of india holiday list, supreme court holiday calendar, courtholidayslist',
+    h1: `Supreme Court of India Holiday List ${year}`,
     canonicalPath: '/supreme-court',
     breadcrumbs: [
       { name: 'Home', path: '/' },
@@ -300,9 +301,13 @@ export function generateSupremeHubSeo(): SeoContent {
     ],
     faqs: [
       {
-        question: 'Where is the Supreme Court holiday list for the current year?',
+        question: `Where is the Supreme Court holiday list for ${year}?`,
+        answer: `The Supreme Court of India holiday calendar for ${year} is shown on this page. Use Month wise or Year wise view, and open the official PDF from the disclaimer strip when available.`,
+      },
+      {
+        question: 'Does the Supreme Court observe summer and winter vacations?',
         answer:
-          'Choose a year below to open the Supreme Court of India holiday calendar.',
+          'Yes. The Supreme Court holiday list typically includes gazetted holidays and vacation periods. Check the calendar above for exact dates for the selected year.',
       },
     ],
   }
@@ -312,8 +317,8 @@ export function generateContactSeo(): SeoContent {
   return {
     title: `Contact Us | ${SITE_NAME}`,
     description:
-      'Contact CourtHoliday for questions about court holiday calendars, data corrections, or partnership enquiries.',
-    keywords: 'contact courtholiday, court holiday support',
+      'Contact Court Holidays List for questions about court holiday calendars, data corrections, or partnership enquiries.',
+    keywords: 'contact courtholidayslist, court holidays list support',
     h1: 'Contact Us',
     canonicalPath: '/contact',
     breadcrumbs: [
@@ -327,7 +332,7 @@ export function generateContactSeo(): SeoContent {
 export function generateNotFoundSeo(): SeoContent {
   return {
     title: `Page Not Found | ${SITE_NAME}`,
-    description: 'The page you requested could not be found on CourtHoliday.',
+    description: 'The page you requested could not be found on Court Holidays List.',
     keywords: '404, page not found',
     h1: 'Page Not Found',
     canonicalPath: '/',

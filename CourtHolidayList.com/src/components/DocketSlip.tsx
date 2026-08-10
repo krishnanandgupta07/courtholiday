@@ -5,69 +5,7 @@ interface DocketSlipProps {
   highlighted?: boolean
 }
 
-/** Collapse sorted day numbers into readable ranges, e.g. [1,2,3,7] → "1-3, 7" */
-export function formatHolidayDayRanges(days: number[]): string[] {
-  if (days.length === 0) return []
-  const ranges: string[] = []
-  let start = days[0]
-  let end = days[0]
-
-  for (let i = 1; i < days.length; i += 1) {
-    const value = days[i]
-    if (value === end + 1) {
-      end = value
-      continue
-    }
-    ranges.push(start === end ? String(start) : `${start}-${end}`)
-    start = value
-    end = value
-  }
-  ranges.push(start === end ? String(start) : `${start}-${end}`)
-  return ranges
-}
-
-interface GroupedMonthSlipProps {
-  name: string
-  dayNumbers: number[]
-}
-
-export function GroupedMonthSlip({ name, dayNumbers }: GroupedMonthSlipProps) {
-  const ranges = formatHolidayDayRanges(dayNumbers)
-  const count = dayNumbers.length
-
-  return (
-    <article
-      className="flex gap-2.5 border border-brassLight/50 bg-parchment px-2.5 py-2 shadow-slip transition hover:border-brass/50"
-      aria-label={`${name}, on ${ranges.join(', ')}`}
-    >
-      <div className="flex w-11 shrink-0 flex-col items-center justify-center rounded-sm border border-brassLight/50 bg-navy/5 py-1.5">
-        <span className="font-mono text-lg font-semibold leading-none text-navy">
-          {count}
-        </span>
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <h3 className="font-body text-sm font-semibold leading-snug text-ink">
-          {name}
-        </h3>
-        <div className="mt-1.5 flex flex-wrap items-center gap-1">
-          <span className="shrink-0 font-body text-[11px] font-medium text-navy/75">
-            On
-          </span>
-          {ranges.map((range) => (
-            <span
-              key={range}
-              className="inline-flex rounded-sm border border-brassLight/70 bg-parchmentDim/90 px-1.5 py-0.5 font-mono text-[10px] text-navy"
-            >
-              {range}
-            </span>
-          ))}
-        </div>
-      </div>
-    </article>
-  )
-}
-
+/** One holiday row: date block (month · day · weekday) + holiday name. */
 export function DocketSlip({ holiday, highlighted = false }: DocketSlipProps) {
   const date = new Date(
     Number(holiday.date.slice(0, 4)),

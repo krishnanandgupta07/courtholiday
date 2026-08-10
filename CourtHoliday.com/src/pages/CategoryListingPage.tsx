@@ -1,11 +1,13 @@
 /**
  * Category listing with crawlable pagination — /high-courts, /district-courts/page/2, etc.
+ * Page 1 for High Courts embeds the live calendar (search landings expect a calendar, not only links).
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { fetchCourtsList, fetchYears } from '../api/client'
-import { Footer } from '../components/Footer'
 import { AppDownloadBanner } from '../components/AppDownloadBanner'
+import { CourtHolidayCalendar } from '../components/CourtHolidayCalendar'
+import { Footer } from '../components/Footer'
 import { Breadcrumbs } from '../components/seo/Breadcrumbs'
 import { FAQSection } from '../components/seo/FAQSection'
 import { SEO } from '../components/seo/SEO'
@@ -22,13 +24,18 @@ import {
 } from '../seo/slugs'
 import type { CourtCategory, CourtOption } from '../types/api'
 import { filterCourtsByCategory } from '../utils/courtCategory'
-import { filterSelectableYears } from '../utils/yearAvailability'
+import {
+  clampToSelectableYear,
+  filterSelectableYears,
+} from '../utils/yearAvailability'
 
 const CATEGORY_BY_SEGMENT: Record<string, CourtCategory> = {
   'high-courts': 'high-court',
   'district-courts': 'district-court',
   tribunals: 'tribunal',
 }
+
+const HC_DEFAULT_COURT = 'Telangana High Court'
 
 interface CategoryListingPageProps {
   categorySegment: 'high-courts' | 'district-courts' | 'tribunals'
@@ -72,7 +79,7 @@ export function CategoryListingPage({
     [category, courts],
   )
   const { pageItems, page, totalPages } = paginateCourts(filtered, pageNum)
-  const year = years[0] ?? new Date().getFullYear()
+  const year = clampToSelectableYear(years[0] ?? new Date().getFullYear())
   const seo = generateCategoryListingSeo(category, page, year)
 
   const prevPath =
@@ -94,6 +101,80 @@ export function CategoryListingPage({
     breadcrumbs: seo.breadcrumbs,
     faqs: seo.faqs,
   })
+
+  const showEmbeddedCalendar =
+    category === 'high-court' && page === 1 && !loading && filtered.length > 0
+
+  const defaultCourt =
+    filtered.find((c) =>
+      c.courtName.toLowerCase().includes(HC_DEFAULT_COURT.toLowerCase()),
+    ) ?? filtered[0]
+
+  const courtDirectory = (
+    <nav
+      aria-label={`${seo.h1} directory`}
+      className="border-t border-brassLight/30 bg-parchmentDim/30 px-3 py-4 sm:px-4 md:px-6 lg:px-8"
+    >
+      <h2 className="font-display text-base text-navy sm:text-lg">
+        All {seo.h1.replace(/ Holiday Lists.*/i, '')} courts
+      </h2>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        {pageItems.map((court) => (
+          <li key={court.courtName}>
+            <Link
+              to={courtHolidayPath(court.courtName, year, category)}
+              className="block rounded-sm border border-brassLight/40 bg-parchment px-3 py-2.5 font-body text-sm text-navy transition hover:border-brass hover:bg-parchmentDim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
+            >
+              {court.courtName} — Holidays {year}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {totalPages > 1 ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3 font-body text-sm">
+          {prevPath ? (
+            <Link to={prevPath} rel="prev" className="text-navy underline">
+              ← Previous
+            </Link>
+          ) : null}
+          <span className="text-inkSoft">
+            Page {page} of {totalPages}
+          </span>
+          {nextPath ? (
+            <Link to={nextPath} rel="next" className="text-navy underline">
+              Next →
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+      <FAQSection faqs={seo.faqs} />
+    </nav>
+  )
+
+  if (showEmbeddedCalendar && defaultCourt) {
+    return (
+      <>
+        <SEO
+          title={seo.title}
+          description={seo.description}
+          keywords={seo.keywords}
+          canonical={canonicalFromPath(seo.canonicalPath)}
+          prevPath={prevPath}
+          nextPath={nextPath}
+        />
+        <StructuredData schemas={schemas} />
+        <CourtHolidayCalendar
+          initialCategory="high-court"
+          initialCourtName={defaultCourt.courtName}
+          initialYear={year}
+          pageTitle={seo.h1}
+          onHomeClick={() => navigate('/')}
+          onContactClick={() => navigate('/contact')}
+          bottomSlot={courtDirectory}
+        />
+      </>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-parchment bg-parchment-grid bg-grid text-ink">

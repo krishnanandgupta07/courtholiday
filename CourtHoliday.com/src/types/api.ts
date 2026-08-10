@@ -95,3 +95,23 @@ export interface ContactUsResponse {
   success: boolean
   message?: string
 }
+
+/** Year-specific official PDF from GET /api/courts/holiday-calendar-link/:benchId */
+export interface HolidayCalendarYearLink {
+  year: number
+  link: string
+}
+
+/** GET /api/courts/holiday-calendar-link/:benchId */
+export interface HolidayCalendarLinkData {
+  id: number
+  courtName: string
+  benchName: string
+  holidayCalendarLink: HolidayCalendarYearLink[]
+  currentHolidayCalendarLink: string | null
+}
+
+export interface HolidayCalendarLinkResponse {
+  success: boolean
+  data: HolidayCalendarLinkData
+}

@@ -11,6 +11,7 @@ import { clampToSelectableYear, isYearSelectable } from '../utils/yearAvailabili
 import { AppHeader } from './AppHeader'
 import { CalendarPanel } from './CalendarPanel'
 import { DateWiseView } from './DateWiseView'
+import { DisclaimerMarquee } from './DisclaimerMarquee'
 import { DocketList } from './DocketList'
 import { AppDownloadBanner } from './AppDownloadBanner'
 import { Footer } from './Footer'
@@ -41,9 +42,9 @@ export interface CourtHolidayCalendarProps {
   initialBenchName?: string
   /** URL-driven year. */
   initialYear?: number
-  /** Single page H1 for SEO (visually compact under breadcrumbs). */
+  /** Single page H1 for SEO (visually compact under the disclaimer strip). */
   pageTitle?: string
-  /** Breadcrumbs / SEO chrome above the view-scope bar. */
+  /** Optional chrome above the page title (kept for non-calendar pages). */
   topSlot?: ReactNode
   /** FAQ / internal links above the footer. */
   bottomSlot?: ReactNode
@@ -65,7 +66,6 @@ export function CourtHolidayCalendar({
   initialBenchName,
   initialYear,
   pageTitle,
-  topSlot,
   bottomSlot,
   onHolidaysChange,
 }: CourtHolidayCalendarProps) {
@@ -487,7 +487,11 @@ export function CourtHolidayCalendar({
           onViewScopeChange={handleViewScopeChange}
           onHomeClick={onHomeClick}
         />
-        {topSlot}
+        <DisclaimerMarquee
+          benchId={isDateView ? null : selectedBenchId}
+          courtName={selectedCourt || viewLabel?.court || null}
+          year={selectedYear}
+        />
         {pageTitle ? (
           <div className="shrink-0 border-b border-brassLight/20 bg-parchment px-3 py-1.5 sm:px-4 md:px-6 lg:px-8">
             <h1 className="font-display text-sm leading-tight text-navy sm:text-base md:text-lg">

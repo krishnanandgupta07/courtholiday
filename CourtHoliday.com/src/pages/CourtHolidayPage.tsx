@@ -3,10 +3,9 @@
  * Resolves court from slug, injects SEO meta, breadcrumbs, FAQ, internal links.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { fetchCourtsList, fetchYears } from '../api/client'
 import { CourtHolidayCalendar } from '../components/CourtHolidayCalendar'
-import { Breadcrumbs } from '../components/seo/Breadcrumbs'
 import { FAQSection } from '../components/seo/FAQSection'
 import { InternalLinks } from '../components/seo/InternalLinks'
 import { SEO } from '../components/seo/SEO'
@@ -160,6 +159,14 @@ export function CourtHolidayPage() {
     )
   }
 
+  // Canonical hub for this year’s Supreme Court calendar (Google ranks /supreme-court)
+  if (
+    resolved.category === 'supreme-court' &&
+    year === clampToSelectableYear(new Date().getFullYear())
+  ) {
+    return <Navigate to="/supreme-court" replace />
+  }
+
   if (loadError && courts.length === 0) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-parchment px-4">
@@ -208,7 +215,6 @@ export function CourtHolidayPage() {
         onHomeClick={() => navigate('/')}
         onContactClick={() => navigate('/contact')}
         onHolidaysChange={onHolidaysChange}
-        topSlot={<Breadcrumbs items={seo.breadcrumbs} />}
         bottomSlot={
           <>
             <FAQSection faqs={seo.faqs} />

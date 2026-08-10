@@ -95,7 +95,7 @@ function buildHeadTags(
     <meta name="robots" content="${robots}" />
     <link rel="canonical" href="${canonical}" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="CourtHoliday" />
+    <meta property="og:site_name" content="CourtHolidayList" />
     <meta property="og:locale" content="en_IN" />
     <meta property="og:title" content="${escapeHtml(seo.title)}" />
     <meta property="og:description" content="${escapeHtml(seo.description)}" />

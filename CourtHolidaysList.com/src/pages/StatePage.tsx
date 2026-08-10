@@ -1,16 +1,19 @@
 /**
  * State hub — /states/:stateSlug and /states/:stateSlug/holidays-:year
+ * When a High Court matches the state, shows that calendar on this URL (FAQ + related courts below).
  */
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { fetchCourtsList, fetchYears } from '../api/client'
-import { Footer } from '../components/Footer'
 import { AppDownloadBanner } from '../components/AppDownloadBanner'
+import { CourtHolidayCalendar } from '../components/CourtHolidayCalendar'
+import { Footer } from '../components/Footer'
 import { Breadcrumbs } from '../components/seo/Breadcrumbs'
 import { FAQSection } from '../components/seo/FAQSection'
 import { SEO } from '../components/seo/SEO'
 import { StructuredData } from '../components/seo/StructuredData'
 import { canonicalFromPath, generateStateSeo } from '../seo/content'
+import { SITE_NAME } from '../seo/constants'
 import { buildPageSchemas } from '../seo/schema'
 import {
   courtHolidayPath,
@@ -20,16 +23,19 @@ import {
 } from '../seo/slugs'
 import type { CourtOption } from '../types/api'
 import { classifyCourtCategory } from '../utils/courtCategory'
-import { filterSelectableYears } from '../utils/yearAvailability'
+import {
+  clampToSelectableYear,
+  filterSelectableYears,
+} from '../utils/yearAvailability'
 
 export function StatePage() {
+  const navigate = useNavigate()
   const { stateSlug, yearSegment } = useParams<{
     stateSlug: string
     yearSegment?: string
   }>()
-  // Accept /states/:slug/holidays-2026 (sitemap) — ignore unknown segments
   const yearMatch = yearSegment?.match(/^holidays-(\d{4})$/)
-  const year = yearMatch ? Number(yearMatch[1]) : undefined
+  const yearFromUrl = yearMatch ? Number(yearMatch[1]) : undefined
   const slug = stateSlug ?? ''
   const invalidYearSegment = Boolean(yearSegment && !yearMatch)
   const stateLabel = slug
@@ -60,8 +66,18 @@ export function StatePage() {
     [courts, slug],
   )
 
-  const seo = generateStateSeo(slug, stateLabel, year)
-  const displayYear = year ?? years[0] ?? new Date().getFullYear()
+  const primaryHighCourt = useMemo(
+    () =>
+      related.find(
+        (c) => classifyCourtCategory(c.courtName) === 'high-court',
+      ),
+    [related],
+  )
+
+  const seo = generateStateSeo(slug, stateLabel, yearFromUrl)
+  const displayYear = clampToSelectableYear(
+    yearFromUrl ?? years[0] ?? new Date().getFullYear(),
+  )
 
   const schemas = buildPageSchemas({
     title: seo.title,
@@ -75,7 +91,7 @@ export function StatePage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-parchment px-4 text-ink">
         <SEO
-          title="Page Not Found | CourtHoliday"
+          title={`Page Not Found | ${SITE_NAME}`}
           description="Unknown state holiday URL."
           noindex
         />
@@ -84,6 +100,69 @@ export function StatePage() {
           Back to {stateLabel}
         </Link>
       </div>
+    )
+  }
+
+  const relatedLinks = (
+    <nav
+      aria-label={`${stateLabel} court holiday links`}
+      className="border-t border-brassLight/30 bg-parchmentDim/30 px-3 py-4 sm:px-4 md:px-6 lg:px-8"
+    >
+      <h2 className="font-display text-base text-navy sm:text-lg">
+        Courts in {stateLabel}
+      </h2>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        {related.map((court) => {
+          const cat = classifyCourtCategory(court.courtName)
+          return (
+            <li key={court.courtName}>
+              <Link
+                to={courtHolidayPath(court.courtName, displayYear, cat)}
+                className="block rounded-sm border border-brassLight/40 bg-parchment px-3 py-2.5 font-body text-sm text-navy transition hover:border-brass focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
+              >
+                {court.courtName} — Holidays {displayYear}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+      {yearFromUrl == null && years.length > 1 ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {years.map((y) => (
+            <Link
+              key={y}
+              to={statePath(slug, y)}
+              className="rounded-sm border border-brassLight/50 px-2.5 py-1 font-body text-xs text-navy hover:bg-parchmentDim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
+            >
+              {y}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+      <FAQSection faqs={seo.faqs} />
+    </nav>
+  )
+
+  if (primaryHighCourt) {
+    return (
+      <>
+        <SEO
+          title={seo.title}
+          description={seo.description}
+          keywords={seo.keywords}
+          canonical={canonicalFromPath(seo.canonicalPath)}
+        />
+        <StructuredData schemas={schemas} />
+        <CourtHolidayCalendar
+          initialCategory="high-court"
+          initialCourtName={primaryHighCourt.courtName}
+          initialYear={displayYear}
+          pageTitle={seo.h1}
+          onHomeClick={() => navigate('/')}
+          onContactClick={() => navigate('/contact')}
+          bottomSlot={relatedLinks}
+        />
+      </>
     )
   }
 
@@ -108,7 +187,7 @@ export function StatePage() {
         <h1 className="font-display text-xl text-navy sm:text-2xl">{seo.h1}</h1>
         <p className="mt-2 font-body text-sm text-inkSoft">{seo.description}</p>
 
-        {year == null && years.length > 0 ? (
+        {yearFromUrl == null && years.length > 0 ? (
           <div className="mt-4 flex flex-wrap gap-2">
             {years.map((y) => (
               <Link
@@ -136,11 +215,6 @@ export function StatePage() {
               </li>
             )
           })}
-          {related.length === 0 ? (
-            <li className="font-body text-sm text-inkSoft">
-              No courts found for this state yet.
-            </li>
-          ) : null}
         </ul>
         <FAQSection faqs={seo.faqs} />
       </main>

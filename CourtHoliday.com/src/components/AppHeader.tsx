@@ -278,7 +278,7 @@ export function AppHeader({
 
           <div className="hidden flex-col items-end gap-1.5 lg:flex">
             <p className="max-w-[14rem] text-right font-body text-[10px] leading-snug text-parchment/80 xl:text-[11px]">
-              Track your cases & get notified on hearing dates
+              Track Your Cases & get Alerts for Hearing Status
             </p>
             <div className="flex items-center gap-1.5">
               <StoreBadge

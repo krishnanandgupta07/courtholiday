@@ -4,6 +4,8 @@
  */
 import type { CourtCategory } from '../types/api'
 import { classifyCourtCategory } from '../utils/courtCategory'
+import { clampToSelectableYear } from '../utils/yearAvailability'
+import { SITE_URL } from './constants'
 
 /** Normalize text into a URL slug (lowercase, hyphens, no punctuation). */
 export function toSlug(text: string): string {
@@ -65,6 +67,10 @@ export function courtHolidayPath(
   const cat = category ?? classifyCourtCategory(courtName)
 
   if (cat === 'supreme-court') {
+    // Ranked hub URL for the primary selectable year; year slugs for others
+    if (year === clampToSelectableYear(new Date().getFullYear())) {
+      return '/supreme-court'
+    }
     return `/supreme-court-holidays-${year}`
   }
   if (cat === 'district-court') {
@@ -115,9 +121,8 @@ export function contactPath(): string {
 }
 
 export function absoluteUrl(path: string): string {
-  const base = 'https://courtholiday.com'
-  if (!path || path === '/') return `${base}/`
-  return `${base}${path.startsWith('/') ? path : `/${path}`}`
+  if (!path || path === '/') return `${SITE_URL}/`
+  return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`
 }
 
 /**

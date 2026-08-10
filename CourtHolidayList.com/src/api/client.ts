@@ -6,6 +6,8 @@ import type {
   CourtOption,
   CourtsListResponse,
   Holiday,
+  HolidayCalendarLinkData,
+  HolidayCalendarLinkResponse,
   HolidaysResponse,
   YearsResponse,
 } from '../types/api'
@@ -129,6 +131,34 @@ export async function fetchHolidaysByDate(date: string): Promise<Holiday[]> {
       if (courtCmp !== 0) return courtCmp
       return (a.benchName ?? '').localeCompare(b.benchName ?? '')
     })
+}
+
+/**
+ * Official court holiday calendar PDF for a bench.
+ * GET https://api.courtlivestream.com/api/courts/holiday-calendar-link/{benchId}
+ */
+export async function fetchHolidayCalendarLink(
+  benchId: number,
+): Promise<HolidayCalendarLinkData> {
+  const payload = await fetchJson<HolidayCalendarLinkResponse>(
+    `${API_BASE}/api/courts/holiday-calendar-link/${benchId}`,
+  )
+
+  if (!payload.success || !payload.data) {
+    throw new Error('Unexpected holiday calendar link response')
+  }
+
+  return payload.data
+}
+
+/** Prefer the PDF for `year`, otherwise the API's current link. */
+export function resolveHolidayCalendarPdfUrl(
+  data: HolidayCalendarLinkData,
+  year: number,
+): string | null {
+  const forYear = data.holidayCalendarLink?.find((item) => item.year === year)
+  const url = forYear?.link?.trim() || data.currentHolidayCalendarLink?.trim()
+  return url || null
 }
 
 /** POST https://api.courtlivestream.com/api/contact-us */

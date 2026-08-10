@@ -210,7 +210,7 @@ export function ContactUsPage({ onBack, onOpenContact }: ContactUsPageProps) {
           >
             <img
               src="/images/CourtLiveLogo.jpeg"
-              alt="CourtHoliday – Indian court holiday calendar logo"
+              alt="Court Holidays List – Indian court holiday calendar logo"
               className="h-6 w-auto shrink-0 rounded-sm border border-brassLight/30 bg-parchment object-contain"
               width={60}
               height={24}
@@ -219,7 +219,7 @@ export function ContactUsPage({ onBack, onOpenContact }: ContactUsPageProps) {
             />
             <div className="min-w-0">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-brassLight">
-                Court Holidays Calendar
+                Court Holidays List
               </p>
               <h1 className="font-display text-lg leading-tight tracking-tight sm:text-xl">
                 Contact Us

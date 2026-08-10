@@ -4,6 +4,7 @@
  */
 import type { CourtCategory } from '../types/api'
 import { classifyCourtCategory } from '../utils/courtCategory'
+import { clampToSelectableYear } from '../utils/yearAvailability'
 
 /** Normalize text into a URL slug (lowercase, hyphens, no punctuation). */
 export function toSlug(text: string): string {
@@ -65,6 +66,10 @@ export function courtHolidayPath(
   const cat = category ?? classifyCourtCategory(courtName)
 
   if (cat === 'supreme-court') {
+    // Ranked hub URL for the primary selectable year; year slugs for others
+    if (year === clampToSelectableYear(new Date().getFullYear())) {
+      return '/supreme-court'
+    }
     return `/supreme-court-holidays-${year}`
   }
   if (cat === 'district-court') {

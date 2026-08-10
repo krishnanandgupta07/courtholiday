@@ -32,7 +32,7 @@ export function seoContentForPath(
 
   if (clean === '/') return generateHomeSeo(yearDefault)
   if (clean === '/contact') return generateContactSeo()
-  if (clean === '/supreme-court') return generateSupremeHubSeo()
+  if (clean === '/supreme-court') return generateSupremeHubSeo(yearDefault)
   if (clean === '/404') return generateNotFoundSeo()
 
   const yearHub = clean.match(/^\/years\/(\d{4})$/)

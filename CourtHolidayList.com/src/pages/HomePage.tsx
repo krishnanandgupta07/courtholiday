@@ -5,7 +5,6 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CourtHolidayCalendar } from '../components/CourtHolidayCalendar'
-import { Breadcrumbs } from '../components/seo/Breadcrumbs'
 import { FAQSection } from '../components/seo/FAQSection'
 import { SEO } from '../components/seo/SEO'
 import { StructuredData } from '../components/seo/StructuredData'
@@ -39,7 +38,6 @@ export function HomePage() {
         pageTitle={seo.h1}
         onHomeClick={() => navigate('/')}
         onContactClick={() => navigate('/contact')}
-        topSlot={<Breadcrumbs items={seo.breadcrumbs} />}
         bottomSlot={<FAQSection faqs={seo.faqs} />}
       />
     </>

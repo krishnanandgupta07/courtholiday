@@ -7,7 +7,7 @@ import {
   getMonthListScrollAnchor,
   todayKey,
 } from '../utils/calendar'
-import { DocketSlip, GroupedMonthSlip } from './DocketSlip'
+import { DocketSlip } from './DocketSlip'
 
 interface DocketListProps {
   holidays: Holiday[]
@@ -95,33 +95,11 @@ export function DocketList({
     ? 'Choose a date and press View Holidays to list courts observing a holiday.'
     : 'Calendar is loading — the docket will populate shortly.'
 
-  const groupedMonthHolidays = useMemo(() => {
-    if (!isMonthView) return []
-
-    const byName = new Map<string, Holiday[]>()
-    for (const holiday of holidays) {
-      const key = holiday.name.trim()
-      const existing = byName.get(key)
-      if (existing) {
-        existing.push(holiday)
-      } else {
-        byName.set(key, [holiday])
-      }
-    }
-
-    return Array.from(byName.entries())
-      .map(([name, items]) => {
-        const sorted = [...items].sort((a, b) => a.date.localeCompare(b.date))
-        return {
-          name,
-          anchorDate: sorted[0]?.date ?? '',
-          dayNumbers: sorted
-            .map((item) => Number(item.date.slice(8, 10)))
-            .sort((a, b) => a - b),
-        }
-      })
-      .sort((a, b) => a.anchorDate.localeCompare(b.anchorDate))
-  }, [holidays, isMonthView])
+  /** Chronological list — one row per holiday date (industry-standard docket). */
+  const orderedHolidays = useMemo(
+    () => [...holidays].sort((a, b) => a.date.localeCompare(b.date)),
+    [holidays],
+  )
 
   useEffect(() => {
     if (!isMonthView || !hasLoaded || loading || holidays.length === 0) return
@@ -221,22 +199,9 @@ export function DocketList({
           </div>
         )}
 
-        {!loading && !error && holidays.length > 0 && isMonthView && (
-          <ul className="space-y-1.5">
-            {groupedMonthHolidays.map((group, index) => (
-              <li key={`${group.name}-${index}`} data-holiday-date={group.anchorDate}>
-                <GroupedMonthSlip
-                  name={group.name}
-                  dayNumbers={group.dayNumbers}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {!loading && !error && holidays.length > 0 && !isMonthView && (
+        {!loading && !error && orderedHolidays.length > 0 && (
           <ul className="space-y-1">
-            {holidays.map((holiday, index) => {
+            {orderedHolidays.map((holiday, index) => {
               const isToday = holiday.date === today
               const highlighted =
                 isToday ||
@@ -244,7 +209,7 @@ export function DocketList({
 
               return (
                 <li
-                  key={`${holiday.id}-${holiday.benchId ?? index}`}
+                  key={`${holiday.id}-${holiday.benchId ?? index}-${holiday.date}`}
                   data-holiday-date={holiday.date}
                 >
                   <DocketSlip holiday={holiday} highlighted={highlighted} />

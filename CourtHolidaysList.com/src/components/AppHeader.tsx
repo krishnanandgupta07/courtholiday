@@ -138,7 +138,7 @@ export function AppHeader({
           >
             <img
               src="/images/CourtLiveLogo.jpeg"
-              alt="CourtHoliday – Indian court holiday calendar logo"
+              alt="Court Holidays List – Indian court holiday calendar logo"
               className="h-5 w-auto shrink-0 rounded-sm border border-brassLight/30 bg-parchment object-contain shadow-sm sm:h-6"
               width={60}
               height={24}
@@ -153,7 +153,7 @@ export function AppHeader({
               onClick={onHomeClick}
               className="block truncate text-left font-display text-xs leading-tight tracking-tight text-parchment transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-1 focus-visible:ring-offset-navy sm:text-sm md:text-base"
             >
-              Court Holidays Calendar
+              Court Holidays List
             </button>
             <p className="mt-0.5 truncate font-mono text-[8px] uppercase tracking-[0.12em] text-brassLight/90 sm:text-[9px]">
               Powered by{' '}
@@ -278,7 +278,7 @@ export function AppHeader({
 
           <div className="hidden flex-col items-end gap-1.5 lg:flex">
             <p className="max-w-[14rem] text-right font-body text-[10px] leading-snug text-parchment/80 xl:text-[11px]">
-              Track your cases & get notified on hearing dates
+              Track Your Cases & get Alerts for Hearing Status
             </p>
             <div className="flex items-center gap-1.5">
               <StoreBadge

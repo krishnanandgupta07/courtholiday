@@ -27,6 +27,7 @@ export function organizationAndWebsiteSchema() {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#organization`,
       name: SITE_NAME,
+      alternateName: ['CourtHolidaysList', 'Court Holidays List India'],
       url: SITE_URL,
       logo: {
         '@type': 'ImageObject',
@@ -38,6 +39,8 @@ export function organizationAndWebsiteSchema() {
       '@id': `${SITE_URL}/#website`,
       url: SITE_URL,
       name: SITE_NAME,
+      alternateName: 'courtholidayslist.com',
+      inLanguage: 'en-IN',
       publisher: { '@id': `${SITE_URL}/#organization` },
       potentialAction: {
         '@type': 'SearchAction',

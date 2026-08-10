@@ -15,3 +15,38 @@
     @apply min-h-screen w-full;
   }
 }
+
+/* Continuous right→left ticker for the disclaimer strip under the header */
+@layer utilities {
+  @keyframes disclaimer-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .disclaimer-marquee-track {
+    animation: disclaimer-marquee 45s linear infinite;
+  }
+
+  .disclaimer-marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .disclaimer-marquee-track {
+      animation: none;
+      transform: none;
+      padding-left: 0.75rem;
+      width: 100%;
+      white-space: normal;
+      flex-wrap: wrap;
+    }
+
+    .disclaimer-marquee-track > p[aria-hidden='true'] {
+      display: none;
+    }
+  }
+}

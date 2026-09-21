@@ -52,7 +52,7 @@ export function SelectorBar({
   return (
     <aside
       aria-label="Court holiday selectors"
-      className="flex h-fit w-full flex-col gap-2.5 self-start border border-brassLight/60 bg-parchment/90 p-2.5 shadow-slip lg:sticky lg:top-0"
+      className="flex h-fit w-full flex-col gap-2 self-start border border-brassLight/60 bg-parchment/90 p-2 shadow-slip sm:gap-2.5 sm:p-2.5 lg:sticky lg:top-0"
     >
       {mode === 'date' ? (
         <>
@@ -99,73 +99,75 @@ export function SelectorBar({
         </>
       ) : (
         <>
-          <label className="block">
-            <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
-              Court Name
-            </span>
-            <select
-              className={selectClass}
-              value={selectedCourt}
-              disabled={courtsLoading || courts.length === 0}
-              onChange={(e) => onCourtChange(e.target.value)}
-              aria-busy={courtsLoading}
-            >
-              <option value="">
-                {courtsLoading ? 'Loading courts…' : 'Choose a court'}
-              </option>
-              {courts.map((court) => (
-                <option key={court.courtName} value={court.courtName}>
-                  {court.courtName}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            <label className="block sm:col-span-2 lg:col-span-1">
+              <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
+                Court Name
+              </span>
+              <select
+                className={selectClass}
+                value={selectedCourt}
+                disabled={courtsLoading || courts.length === 0}
+                onChange={(e) => onCourtChange(e.target.value)}
+                aria-busy={courtsLoading}
+              >
+                <option value="">
+                  {courtsLoading ? 'Loading courts…' : 'Choose a court'}
                 </option>
-              ))}
-            </select>
-          </label>
+                {courts.map((court) => (
+                  <option key={court.courtName} value={court.courtName}>
+                    {court.courtName}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="block">
-            <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
-              Bench Name
-            </span>
-            <select
-              className={selectClass}
-              value={selectedBenchId ?? ''}
-              disabled={!selectedCourt || benches.length === 0}
-              onChange={(e) => {
-                const value = e.target.value
-                onBenchChange(value ? Number(value) : null)
-              }}
-            >
-              <option value="">
-                {!selectedCourt
-                  ? 'Select a court first'
-                  : benches.length === 0
-                    ? 'No benches available'
-                    : 'Choose a bench'}
-              </option>
-              {benches.map((bench) => (
-                <option key={bench.id} value={bench.id}>
-                  {bench.name}
-                  {bench.benchType ? ` — ${bench.benchType}` : ''}
+            <label className="block">
+              <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
+                Bench Name
+              </span>
+              <select
+                className={selectClass}
+                value={selectedBenchId ?? ''}
+                disabled={!selectedCourt || benches.length === 0}
+                onChange={(e) => {
+                  const value = e.target.value
+                  onBenchChange(value ? Number(value) : null)
+                }}
+              >
+                <option value="">
+                  {!selectedCourt
+                    ? 'Select a court first'
+                    : benches.length === 0
+                      ? 'No benches available'
+                      : 'Choose a bench'}
                 </option>
-              ))}
-            </select>
-          </label>
+                {benches.map((bench) => (
+                  <option key={bench.id} value={bench.id}>
+                    {bench.name}
+                    {bench.benchType ? ` — ${bench.benchType}` : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="block">
-            <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
-              Year
-            </span>
-            <select
-              className={selectClass}
-              value={selectedYear}
-              onChange={(e) => onYearChange(Number(e.target.value))}
-            >
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label className="block">
+              <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
+                Year
+              </span>
+              <select
+                className={selectClass}
+                value={selectedYear}
+                onChange={(e) => onYearChange(Number(e.target.value))}
+              >
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           {!hideSubmitButton && (
             <button

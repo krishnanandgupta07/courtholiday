@@ -23,7 +23,7 @@ interface CalendarPanelProps {
 }
 
 const navBtn =
-  'inline-flex min-h-10 min-w-10 items-center justify-center rounded-sm border border-brassLight/70 bg-parchment px-3 font-body text-sm text-navy transition hover:bg-parchmentDim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-2 focus-visible:ring-offset-parchment disabled:opacity-40'
+  'inline-flex min-h-9 min-w-9 items-center justify-center rounded-sm border border-brassLight/70 bg-parchment px-2.5 font-body text-sm text-navy transition hover:bg-parchmentDim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-2 focus-visible:ring-offset-parchment disabled:opacity-40 sm:min-h-10 sm:min-w-10 sm:px-3'
 
 function MonthDayGrid({
   year,
@@ -125,12 +125,12 @@ function MonthDayGrid({
                   : undefined
               }
               className={[
-                'relative flex flex-col border',
+                'group/day relative flex flex-col border',
                 yearView
                   ? 'min-h-[0.9rem] items-center justify-center p-0'
                   : compact
                     ? 'min-h-[0.85rem] items-center justify-center p-0'
-                    : 'min-h-[2.75rem] p-1 md:min-h-[3rem] md:p-1',
+                    : 'min-h-[3.25rem] p-0.5 sm:min-h-[2.75rem] sm:p-1 md:min-h-[3rem] md:p-1',
                 cell.isToday
                   ? 'border-sage ring-1 ring-sage/40 md:ring-2'
                   : 'border-brassLight/40',
@@ -145,9 +145,11 @@ function MonthDayGrid({
                       : 'bg-parchment',
                 isClickable
                   ? 'cursor-pointer transition hover:border-brass hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass'
-                  : yearView && hasHoliday
+                  : hasHoliday && !isYearCompact
                     ? 'cursor-help'
-                    : '',
+                    : yearView && hasHoliday
+                      ? 'cursor-help'
+                      : '',
               ].join(' ')}
             >
               <span
@@ -157,7 +159,7 @@ function MonthDayGrid({
                     ? 'text-[9px] leading-none'
                     : compact
                       ? 'text-[7px] leading-none'
-                      : 'text-xs md:text-sm',
+                      : 'text-[11px] sm:text-xs md:text-sm',
                   cell.isToday
                     ? 'font-bold text-sage'
                     : yearView
@@ -180,7 +182,7 @@ function MonthDayGrid({
               {!isYearCompact && primary && (
                 <span
                   className={[
-                    'mt-0.5 line-clamp-2 text-[9px] leading-tight md:mt-1 md:text-[10px] font-body',
+                    'mt-0.5 line-clamp-2 text-[8px] leading-tight font-body sm:text-[9px] md:mt-1 md:text-[10px]',
                     isGazetted ? 'text-burgundy' : 'text-[#6F5630]',
                   ].join(' ')}
                 >
@@ -188,10 +190,19 @@ function MonthDayGrid({
                 </span>
               )}
               {!isYearCompact && cell.holidays.length > 1 && (
-                <span className="mt-auto font-mono text-[9px] text-inkSoft">
+                <span className="mt-auto font-mono text-[8px] text-inkSoft sm:text-[9px]">
                   +{cell.holidays.length - 1}
                 </span>
               )}
+              {/* Hover / focus tip — reliable on small desktop viewports (native title is often delayed/hidden) */}
+              {!isYearCompact && hasHoliday ? (
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 hidden w-max max-w-[11rem] -translate-x-1/2 rounded-sm border border-brassLight/50 bg-navyDeep px-2 py-1 text-left font-body text-[10px] leading-snug text-parchment shadow-slip group-hover/day:block group-focus-within/day:block"
+                >
+                  {title}
+                </span>
+              ) : null}
             </div>
           )
         })}
@@ -244,18 +255,14 @@ export function CalendarPanel({
   return (
     <section
       aria-label="Holiday calendar"
-      className={
-        viewScope === 'year'
-          ? 'flex h-full min-h-0 flex-col border border-brassLight/60 bg-parchment/80 shadow-slip'
-          : 'flex flex-col border border-brassLight/60 bg-parchment/80 shadow-slip'
-      }
+      className="flex h-full min-h-[20rem] flex-col border border-brassLight/60 bg-parchment/80 shadow-slip sm:min-h-[24rem] lg:min-h-0"
     >
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-brassLight/50 bg-navy px-2.5 py-1 text-parchment">
         <div>
           <h2 className="font-display text-sm leading-tight md:text-base">{title}</h2>
         </div>
         {viewScope === 'month' && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               className={navBtn}
@@ -281,7 +288,13 @@ export function CalendarPanel({
         )}
       </header>
 
-      <div className={viewScope === 'year' ? 'min-h-0 flex-1 overflow-hidden p-1' : 'p-1.5 md:p-2'}>
+      <div
+        className={
+          viewScope === 'year'
+            ? 'min-h-0 flex-1 overflow-auto p-1 lg:overflow-hidden'
+            : 'min-h-0 flex-1 overflow-auto p-1.5 md:p-2'
+        }
+      >
         {loading && (
           <div
             className="grid grid-cols-7 gap-1.5 md:gap-2"

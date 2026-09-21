@@ -127,9 +127,9 @@ export function AppHeader({
         aria-hidden
       />
 
-      <div className="relative flex w-full flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-1.5 sm:px-4 md:flex-nowrap md:gap-3 md:px-6 md:py-2 lg:px-8">
+      <div className="relative flex w-full flex-wrap items-center gap-x-2 gap-y-1 px-2.5 py-1 sm:gap-y-1.5 sm:px-4 sm:py-1.5 md:flex-nowrap md:gap-3 md:px-6 md:py-2 lg:px-8">
         {/* Brand + product attribution (industry standard: "Powered by …") */}
-        <div className="flex min-w-0 shrink-0 items-center gap-2 md:gap-2.5">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2 md:flex-none md:gap-2.5">
           <button
             type="button"
             onClick={onHomeClick}
@@ -151,11 +151,11 @@ export function AppHeader({
             <button
               type="button"
               onClick={onHomeClick}
-              className="block truncate text-left font-display text-xs leading-tight tracking-tight text-parchment transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-1 focus-visible:ring-offset-navy sm:text-sm md:text-base"
+              className="block max-w-[11rem] truncate text-left font-display text-[11px] leading-tight tracking-tight text-parchment transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-1 focus-visible:ring-offset-navy sm:max-w-none sm:text-sm md:text-base"
             >
               Court Holidays List
             </button>
-            <p className="mt-0.5 truncate font-mono text-[8px] uppercase tracking-[0.12em] text-brassLight/90 sm:text-[9px]">
+            <p className="mt-0.5 truncate font-mono text-[7px] uppercase tracking-[0.1em] text-brassLight/90 sm:text-[9px] sm:tracking-[0.12em]">
               Powered by{' '}
               <a
                 href={COURTLIVESTREAM_URL}
@@ -257,7 +257,7 @@ export function AppHeader({
             href={ANDROID_APP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-8 items-center gap-1.5 rounded-sm border border-brass bg-brass px-2 py-1 font-body text-[11px] font-semibold text-navyDeep transition hover:bg-brassLight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brassLight focus-visible:ring-offset-2 focus-visible:ring-offset-navy lg:hidden"
+            className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-sm border border-brass bg-brass px-1.5 py-1 font-body text-[10px] font-semibold text-navyDeep transition hover:bg-brassLight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brassLight focus-visible:ring-offset-2 focus-visible:ring-offset-navy sm:gap-1.5 sm:px-2 sm:text-[11px] lg:hidden"
           >
             <svg
               className="h-3.5 w-3.5"

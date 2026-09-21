@@ -474,12 +474,12 @@ export function CourtHolidayCalendar({
 
   return (
     /*
-      Page scrolls as a whole: first viewport = calendar chrome (header → calendar/list),
-      then FAQ / internal links, then footer — matching pre-SEO layout for the calendar.
+      Page scrolls as a whole.
+      Mobile: natural document scroll (sidebar → calendar → list).
+      Desktop (lg+): first viewport locks calendar chrome so FAQ sits below the fold.
     */
     <div className="flex min-h-screen w-full flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
-      {/* Locked to one viewport so calendar + list stay fully visible */}
-      <div className="flex h-svh max-h-svh w-full flex-col overflow-hidden">
+      <div className="flex w-full flex-col lg:h-svh lg:max-h-svh lg:overflow-hidden">
         <AppHeader
           courtCategory={courtCategory}
           onCourtCategoryChange={handleCourtCategoryChange}
@@ -503,12 +503,12 @@ export function CourtHolidayCalendar({
         <main
           className={
             isYearView
-              ? 'flex min-h-0 w-full flex-1 flex-col overflow-hidden px-3 py-1.5 sm:px-4 md:px-6 lg:px-8'
-              : 'flex min-h-0 w-full flex-1 flex-col overflow-hidden px-3 py-2 sm:px-4 sm:py-3 md:px-6 lg:px-8'
+              ? 'flex min-h-0 w-full flex-1 flex-col px-3 py-1.5 sm:px-4 md:px-6 lg:overflow-hidden lg:px-8'
+              : 'flex min-h-0 w-full flex-1 flex-col px-3 py-2 sm:px-4 sm:py-3 md:px-6 lg:overflow-hidden lg:px-8'
           }
         >
           {isDateView ? (
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="min-h-0 flex-1 lg:overflow-y-auto">
               <DateWiseView
                 selectedDate={selectedDate}
                 loadedDate={loadedDate}
@@ -592,21 +592,21 @@ export function CourtHolidayCalendar({
 
               <div
                 className={[
-                  'grid min-h-0 w-full flex-1 gap-2 items-stretch',
+                  'grid w-full flex-1 gap-2',
                   isYearView && showSidebar
-                    ? 'h-full grid-cols-1 lg:grid-cols-[minmax(11rem,12rem)_minmax(0,1fr)]'
+                    ? 'grid-cols-1 lg:h-full lg:min-h-0 lg:grid-cols-[minmax(11rem,12rem)_minmax(0,1fr)] lg:items-stretch'
                     : showSidebar && showDocketList
-                      ? 'h-full grid-cols-1 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1.4fr)_minmax(16rem,1fr)]'
+                      ? 'grid-cols-1 lg:h-full lg:min-h-0 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1.4fr)_minmax(16rem,1fr)] lg:items-stretch'
                       : showSidebar
-                        ? 'h-full grid-cols-1 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)]'
+                        ? 'grid-cols-1 lg:h-full lg:min-h-0 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)] lg:items-stretch'
                         : showDocketList
-                          ? 'h-full grid-cols-1 md:grid-cols-2'
-                          : 'h-full grid-cols-1',
+                          ? 'grid-cols-1 md:grid-cols-2 lg:h-full lg:min-h-0 lg:items-stretch'
+                          : 'grid-cols-1 lg:h-full lg:min-h-0',
                 ].join(' ')}
               >
                 {courtsState.loading && isBenchView && !courtsState.error && (
                   <div
-                    className="h-40 animate-pulse border border-brassLight/40 bg-parchmentDim/60 lg:h-auto lg:min-h-[12rem]"
+                    className="h-28 animate-pulse border border-brassLight/40 bg-parchmentDim/60 sm:h-40 lg:h-auto lg:min-h-[12rem]"
                     aria-busy="true"
                     aria-label="Loading court selectors"
                   />
@@ -634,7 +634,7 @@ export function CourtHolidayCalendar({
                   />
                 )}
 
-                <div className="flex min-h-0 min-w-0 flex-col">
+                <div className="flex min-h-[20rem] min-w-0 flex-col sm:min-h-[24rem] lg:min-h-0">
                   <CalendarPanel
                     holidays={holidays}
                     year={calendarYear}
@@ -651,7 +651,7 @@ export function CourtHolidayCalendar({
                 </div>
 
                 {showDocketList && (
-                  <div className="flex min-h-0 min-w-0 flex-col">
+                  <div className="flex min-h-[16rem] min-w-0 flex-col sm:min-h-[20rem] lg:min-h-0 lg:h-full">
                     <DocketList
                       holidays={visibleHolidays}
                       loading={holidaysLoading}

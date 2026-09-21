@@ -128,7 +128,7 @@ export function DocketList({
   return (
     <section
       aria-label={isDateView ? 'Date-wise court holiday list' : 'Holiday docket list'}
-      className="flex h-full min-h-0 flex-col border border-brassLight/60 bg-parchment/80 shadow-slip"
+      className="flex h-full min-h-[16rem] flex-col border border-brassLight/60 bg-parchment/80 shadow-slip sm:min-h-[20rem] lg:min-h-0"
     >
       <header className="flex shrink-0 items-start justify-between gap-2 border-b border-brassLight/50 bg-navy px-3 py-2 text-parchment">
         <div className="min-w-0">

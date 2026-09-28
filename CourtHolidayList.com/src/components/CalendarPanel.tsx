@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { Holiday, ViewScope } from '../types/api'
+import { HolidayLegend } from './HolidayLegend'
 import {
   WEEKDAYS,
   buildHolidayMap,
@@ -125,26 +126,22 @@ function MonthDayGrid({
                   : undefined
               }
               className={[
-                'group/day relative flex flex-col border',
+                'group/day relative flex flex-col border transition',
                 yearView
                   ? 'min-h-[0.9rem] items-center justify-center p-0'
                   : compact
                     ? 'min-h-[0.85rem] items-center justify-center p-0'
                     : 'min-h-[3.25rem] p-0.5 sm:min-h-[2.75rem] sm:p-1 md:min-h-[3rem] md:p-1',
                 cell.isToday
-                  ? 'border-sage ring-1 ring-sage/40 md:ring-2'
+                  ? 'z-[1] border-navy ring-2 ring-navy'
                   : 'border-brassLight/40',
-                yearView
-                  ? hasHoliday
-                    ? 'bg-parchment hover:bg-burgundyDim/90'
-                    : 'bg-parchment'
-                  : isGazetted
-                    ? 'bg-burgundyDim/80'
-                    : isRestricted
-                      ? 'bg-brassLight/35'
-                      : 'bg-parchment',
+                isGazetted
+                  ? 'bg-holidayPublic text-parchment hover:bg-holidayPublicHover'
+                  : isRestricted
+                    ? 'bg-holidayWeekend text-parchment hover:bg-holidayWeekendHover'
+                    : 'bg-parchment text-ink',
                 isClickable
-                  ? 'cursor-pointer transition hover:border-brass hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass'
+                  ? 'cursor-pointer hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass'
                   : hasHoliday && !isYearCompact
                     ? 'cursor-help'
                     : yearView && hasHoliday
@@ -160,37 +157,22 @@ function MonthDayGrid({
                     : compact
                       ? 'text-[7px] leading-none'
                       : 'text-[11px] sm:text-xs md:text-sm',
-                  cell.isToday
-                    ? 'font-bold text-sage'
-                    : yearView
-                      ? hasHoliday
-                        ? 'text-burgundy'
-                        : 'text-ink'
-                      : isGazetted
-                        ? 'text-burgundy'
-                        : 'text-ink',
+                  hasHoliday
+                    ? 'text-parchment'
+                    : cell.isToday
+                      ? 'font-bold text-navy'
+                      : 'text-ink',
                 ].join(' ')}
               >
                 {cell.day}
               </span>
-              {hasHoliday && yearView && (
-                <span
-                  className="mt-px h-0.5 w-0.5 rounded-full bg-burgundy/70"
-                  aria-hidden
-                />
-              )}
               {!isYearCompact && primary && (
-                <span
-                  className={[
-                    'mt-0.5 line-clamp-2 text-[8px] leading-tight font-body sm:text-[9px] md:mt-1 md:text-[10px]',
-                    isGazetted ? 'text-burgundy' : 'text-[#6F5630]',
-                  ].join(' ')}
-                >
+                <span className="mt-0.5 line-clamp-2 font-body text-[8px] leading-tight text-parchment sm:text-[9px] md:mt-1 md:text-[10px]">
                   {primary.name}
                 </span>
               )}
               {!isYearCompact && cell.holidays.length > 1 && (
-                <span className="mt-auto font-mono text-[8px] text-inkSoft sm:text-[9px]">
+                <span className="mt-auto font-mono text-[8px] text-parchment/80 sm:text-[9px]">
                   +{cell.holidays.length - 1}
                 </span>
               )}
@@ -368,6 +350,7 @@ export function CalendarPanel({
           </div>
         )}
       </div>
+      <HolidayLegend />
     </section>
   )
 }

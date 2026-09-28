@@ -8,6 +8,7 @@ import {
   todayKey,
 } from '../utils/calendar'
 import { DocketSlip } from './DocketSlip'
+import { HolidayLegend } from './HolidayLegend'
 
 interface DocketListProps {
   holidays: Holiday[]
@@ -219,6 +220,7 @@ export function DocketList({
           </ul>
         )}
       </div>
+      <HolidayLegend />
     </section>
   )
 }

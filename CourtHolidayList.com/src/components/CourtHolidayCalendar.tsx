@@ -479,7 +479,8 @@ export function CourtHolidayCalendar({
       Desktop (lg+): first viewport locks calendar chrome so FAQ sits below the fold.
     */
     <div className="flex min-h-screen w-full flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
-      <div className="flex w-full flex-col lg:h-svh lg:max-h-svh lg:overflow-hidden">
+      <div className="flex w-full min-w-0 flex-1 flex-col">
+      <div className="flex w-full min-w-0 flex-col lg:h-svh lg:max-h-svh lg:overflow-hidden lg:pb-[var(--app-download-bar)]">
         <AppHeader
           courtCategory={courtCategory}
           onCourtCategoryChange={handleCourtCategoryChange}
@@ -685,6 +686,7 @@ export function CourtHolidayCalendar({
       ) : null}
 
       <AppDownloadBanner />
+      </div>
       <Footer onContactClick={onContactClick} />
     </div>
   )

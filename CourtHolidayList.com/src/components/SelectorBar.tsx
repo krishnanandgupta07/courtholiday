@@ -99,8 +99,8 @@ export function SelectorBar({
         </>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
-            <label className="block sm:col-span-2 lg:col-span-1">
+          <div className="grid grid-cols-1 gap-2">
+            <label className="block">
               <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
                 Court Name
               </span>

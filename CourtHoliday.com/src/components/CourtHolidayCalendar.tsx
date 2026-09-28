@@ -16,6 +16,7 @@ import { DocketList } from './DocketList'
 import { AppDownloadBanner } from './AppDownloadBanner'
 import { Footer } from './Footer'
 import { SelectorBar } from './SelectorBar'
+import { CourtMapPicker } from './CourtMapPicker'
 import { useHolidays } from '../hooks/useHolidays'
 
 /** Supreme Court only: hides court/bench pickers (single court & bench; year selector only) */
@@ -73,6 +74,7 @@ export function CourtHolidayCalendar({
     years,
     courts,
     benches,
+    allBenches,
     courtsState,
     reloadCourts,
     selectedCourt,
@@ -114,6 +116,7 @@ export function CourtHolidayCalendar({
   const [courtCategory, setCourtCategory] =
     useState<CourtCategory>(initialCategory)
   const [viewScope, setViewScope] = useState<ViewScope>('month')
+  const [mapPickerOpen, setMapPickerOpen] = useState(false)
   /**
    * Explicit reload flag so the skeleton stays visible across court/bench changes
    * and URL remounts (React can skip painting when cache resolves in one tick).
@@ -346,6 +349,24 @@ export function CourtHolidayCalendar({
     if (isAutoLoad) clearHolidayResults({ pending: true })
   }
 
+  const handleMapConfirm = (courtName: string, benchId: number) => {
+    setMapPickerOpen(false)
+    const courtChanged = courtName !== selectedCourt
+    const benchChanged = benchId !== selectedBenchId
+    if (!courtChanged && !benchChanged) return
+
+    benchAutoAppliedRef.current = courtName
+    setShowReloadSkeleton(true)
+    if (courtChanged) {
+      selectCourt(courtName)
+    }
+    setSelectedBenchId(benchId)
+    if (isAutoLoad) clearHolidayResults({ pending: true })
+    if (courtChanged) {
+      goToCourtUrl(courtName, selectedYear, courtCategory)
+    }
+  }
+
   const handleCourtCategoryChange = (category: CourtCategory) => {
     if (category === courtCategory) return
     autoSelectedRef.current = ''
@@ -449,6 +470,11 @@ export function CourtHolidayCalendar({
     !courtsState.error &&
     filteredCourts.length === 0
 
+  const showMapButton =
+    !isAutoCategory &&
+    (courtCategory === 'high-court' ||
+      (courtCategory === 'district-court' && filteredCourts.length > 0))
+
   /**
    * Keep calendar/list in a loading state while courts load, bench auto-selects,
    * or holidays are fetching — avoids a blank flash between court/bench changes.
@@ -479,7 +505,8 @@ export function CourtHolidayCalendar({
       Desktop (lg+): first viewport locks calendar chrome so FAQ sits below the fold.
     */
     <div className="flex min-h-screen w-full flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
-      <div className="flex w-full flex-col lg:h-svh lg:max-h-svh lg:overflow-hidden">
+      <div className="relative flex min-h-0 flex-1 flex-col">
+      <div className="flex w-full flex-col lg:h-svh lg:max-h-svh lg:overflow-hidden lg:pb-[var(--app-download-bar)]">
         <AppHeader
           courtCategory={courtCategory}
           onCourtCategoryChange={handleCourtCategoryChange}
@@ -631,6 +658,8 @@ export function CourtHolidayCalendar({
                     onYearChange={handleYearChange}
                     onDateChange={setSelectedDate}
                     onSubmit={() => void loadHolidays()}
+                    showMapButton={showMapButton}
+                    onOpenMap={() => setMapPickerOpen(true)}
                   />
                 )}
 
@@ -685,7 +714,19 @@ export function CourtHolidayCalendar({
       ) : null}
 
       <AppDownloadBanner />
+      </div>
       <Footer onContactClick={onContactClick} />
+
+      {mapPickerOpen ? (
+        <CourtMapPicker
+          benches={allBenches}
+          category={courtCategory}
+          selectedCourt={selectedCourt}
+          selectedBenchId={selectedBenchId}
+          onSelect={handleMapConfirm}
+          onClose={() => setMapPickerOpen(false)}
+        />
+      ) : null}
     </div>
   )
 }

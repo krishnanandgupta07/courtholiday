@@ -1,17 +1,10 @@
-import type { ReactNode } from 'react'
 import type { CourtCategory, ViewScope } from '../types/api'
 import { COURT_CATEGORIES } from '../utils/courtCategory'
+import { ANDROID_APP_URL, StoreBadgePair } from './StoreBadges'
 
 const COURTLIVESTREAM_URL =
   import.meta.env.VITE_COURTLIVESTREAM_URL?.trim() ||
   'https://www.courtlivestream.com'
-const ANDROID_APP_URL =
-  import.meta.env.VITE_ANDROID_APP_URL?.trim() ||
-  'https://play.google.com/store/apps/details?id=com.courtlivestream.app&pcampaignid=web_share&pli=1'
-const IOS_APP_URL =
-  import.meta.env.VITE_IOS_APP_URL?.trim() ||
-  'https://apps.apple.com/us/app/courtlive-stream/id6764580795'
-
 const VIEW_TABS: {
   id: ViewScope
   label: string
@@ -44,63 +37,6 @@ const VIEW_TABS: {
   },
 ]
 
-function GooglePlayIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      aria-hidden
-      fill="currentColor"
-    >
-      <path d="M3.609 1.814 13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92Zm10.89 10.893 2.302 2.302-10.937 6.333 8.635-8.635Zm3.199-3.198 2.307 1.335c.8.46.8 1.614 0 2.074l-2.305 1.334L15.028 12l2.67-2.491ZM5.864 2.658 16.8 8.99l-2.302 2.302-8.634-8.634Z" />
-    </svg>
-  )
-}
-
-function AppleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      aria-hidden
-      fill="currentColor"
-    >
-      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-    </svg>
-  )
-}
-
-function StoreBadge({
-  href,
-  label,
-  sublabel,
-  icon,
-}: {
-  href: string
-  label: string
-  sublabel: string
-  icon: ReactNode
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group inline-flex min-h-8 items-center gap-1.5 rounded-sm border border-brassLight/40 bg-navyDeep/60 px-2 py-0.5 text-parchment transition hover:border-brassLight hover:bg-navyDeep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
-    >
-      {icon}
-      <span className="flex flex-col leading-none">
-        <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-brassLight/90">
-          {sublabel}
-        </span>
-        <span className="mt-0.5 font-body text-[11px] font-semibold tracking-wide sm:text-xs">
-          {label}
-        </span>
-      </span>
-    </a>
-  )
-}
-
 interface AppHeaderProps {
   courtCategory: CourtCategory
   onCourtCategoryChange: (category: CourtCategory) => void
@@ -117,7 +53,7 @@ export function AppHeader({
   onHomeClick,
 }: AppHeaderProps) {
   return (
-    <header className="relative sticky top-0 z-40 border-b border-brassLight/25 bg-masthead text-parchment shadow-slip">
+    <header className="relative z-40 border-b border-brassLight/25 bg-masthead text-parchment shadow-slip md:sticky md:top-0">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.1]"
         style={{
@@ -127,9 +63,9 @@ export function AppHeader({
         aria-hidden
       />
 
-      <div className="relative flex w-full flex-wrap items-center gap-x-2 gap-y-1 px-2.5 py-1 sm:gap-y-1.5 sm:px-4 sm:py-1.5 md:flex-nowrap md:gap-3 md:px-6 md:py-2 lg:px-8">
+      <div className="relative flex w-full flex-wrap items-center gap-x-2 gap-y-1 px-2.5 py-1 sm:gap-y-1.5 sm:px-4 sm:py-1.5 md:gap-3 md:px-6 md:py-2 lg:flex-nowrap lg:px-8">
         {/* Brand + product attribution (industry standard: "Powered by …") */}
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2 md:flex-none md:gap-2.5">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2 lg:flex-none lg:gap-2.5">
           <button
             type="button"
             onClick={onHomeClick}
@@ -171,10 +107,10 @@ export function AppHeader({
         </div>
 
         {/* Court type + view scope stacked and centered under each other */}
-        <div className="order-3 flex w-full flex-col items-stretch gap-1 md:order-none md:mx-auto md:w-auto md:flex-1 md:items-center">
+        <div className="order-3 flex w-full min-w-0 flex-col items-stretch gap-1 lg:order-none lg:mx-auto lg:w-auto lg:flex-1 lg:items-center">
           <nav aria-label="Court type">
             <div
-              className="flex w-full items-center justify-start gap-0.5 overflow-x-auto rounded-sm border border-brassLight/35 bg-navyDeep/45 p-0.5 md:mx-auto md:w-fit md:justify-center"
+              className="flex w-full items-center justify-start gap-0.5 overflow-x-auto rounded-sm border border-brassLight/35 bg-navyDeep/45 p-0.5 lg:mx-auto lg:w-fit lg:justify-center"
               role="radiogroup"
               aria-label="Court type"
             >
@@ -214,7 +150,7 @@ export function AppHeader({
           {/* Month / Year / Date / Summary — directly under court tabs */}
           <nav aria-label="Calendar view modes">
             <div
-              className="flex w-full items-center justify-start gap-1 overflow-x-auto md:w-fit md:justify-center"
+              className="flex w-full items-center justify-start gap-1 overflow-x-auto lg:w-fit lg:justify-center"
               role="tablist"
             >
               {VIEW_TABS.map((tab) => {
@@ -251,16 +187,21 @@ export function AppHeader({
           </nav>
         </div>
 
-        {/* App download links + feature promo */}
-        <div className="ml-auto flex shrink-0 items-center gap-2 md:ml-0 lg:gap-3">
+        {/* App download — compact button below lg; badge cluster on desktop */}
+        <div className="ml-auto flex shrink-0 items-center lg:ml-0">
           <a
             href={ANDROID_APP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-sm border border-brass bg-brass px-1.5 py-1 font-body text-[10px] font-semibold text-navyDeep transition hover:bg-brassLight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brassLight focus-visible:ring-offset-2 focus-visible:ring-offset-navy sm:gap-1.5 sm:px-2 sm:text-[11px] lg:hidden"
+            className="app-get-app-btn relative inline-flex min-h-8 shrink-0 items-center gap-1 rounded-sm border border-brassLight bg-brass px-1.5 py-1 font-body text-[10px] font-semibold text-navyDeep transition hover:bg-brassLight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brassLight focus-visible:ring-offset-2 focus-visible:ring-offset-navy sm:gap-1.5 sm:px-2 sm:text-[11px] lg:hidden"
+            aria-label="Get the CourtLiveStream app"
           >
+            <span
+              className="app-promo-live-dot absolute -right-1 -top-1 h-2 w-2 rounded-full bg-brassLight"
+              aria-hidden
+            />
             <svg
-              className="h-3.5 w-3.5"
+              className="app-promo-icon h-3.5 w-3.5"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -276,24 +217,15 @@ export function AppHeader({
             Get App
           </a>
 
-          <div className="hidden flex-col items-end gap-1.5 lg:flex">
-            <p className="max-w-[14rem] text-right font-body text-[10px] leading-snug text-parchment/80 xl:text-[11px]">
-              Track Your Cases & get Alerts for Hearing Status
+          <div className="app-promo-cluster hidden flex-col items-end gap-1.5 rounded-sm border border-brass/55 bg-navyDeep/70 px-2 py-1.5 lg:flex">
+            <p className="flex max-w-[15rem] items-center gap-1.5 text-right font-body text-[10px] leading-snug text-parchment xl:text-[11px]">
+              <span
+                className="app-promo-live-dot h-1.5 w-1.5 shrink-0 rounded-full bg-brassLight"
+                aria-hidden
+              />
+              <span>Get the app — track cases & hearing alerts</span>
             </p>
-            <div className="flex items-center gap-1.5">
-              <StoreBadge
-                href={IOS_APP_URL}
-                sublabel="Download on the"
-                label="App Store"
-                icon={<AppleIcon className="h-4 w-4 text-brassLight" />}
-              />
-              <StoreBadge
-                href={ANDROID_APP_URL}
-                sublabel="Get it on"
-                label="Google Play"
-                icon={<GooglePlayIcon className="h-4 w-4 text-brassLight" />}
-              />
-            </div>
+            <StoreBadgePair />
           </div>
         </div>
       </div>

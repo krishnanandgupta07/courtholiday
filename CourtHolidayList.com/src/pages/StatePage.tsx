@@ -167,6 +167,7 @@ export function StatePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
+      <div className="flex w-full min-w-0 flex-1 flex-col">
       <SEO
         title={seo.title}
         description={seo.description}
@@ -218,6 +219,7 @@ export function StatePage() {
         <FAQSection faqs={seo.faqs} />
       </main>
       <AppDownloadBanner />
+      </div>
       <Footer />
     </div>
   )

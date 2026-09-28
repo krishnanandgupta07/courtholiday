@@ -475,11 +475,14 @@ export function CourtHolidayCalendar({
   return (
     /*
       Page scrolls as a whole.
-      Mobile: natural document scroll (sidebar → calendar → list).
+      Mobile: natural document scroll (sidebar → calendar → list). Download strip is in-flow.
       Desktop (lg+): first viewport locks calendar chrome so FAQ sits below the fold.
+      Download strip is the last child of the content wrapper; Footer is a sibling after it,
+      so the sticky bar stays above Corporate Office. lg padding clears the bar height.
     */
-    <div className="flex min-h-screen w-full flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
-      <div className="flex w-full flex-col lg:h-svh lg:max-h-svh lg:overflow-hidden">
+    <div className="flex min-h-screen w-full min-w-0 flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
+      <div className="flex w-full min-w-0 flex-1 flex-col">
+      <div className="flex w-full min-w-0 flex-col lg:h-svh lg:max-h-svh lg:overflow-hidden lg:pb-[var(--app-download-bar)]">
         <AppHeader
           courtCategory={courtCategory}
           onCourtCategoryChange={handleCourtCategoryChange}
@@ -684,7 +687,8 @@ export function CourtHolidayCalendar({
         </div>
       ) : null}
 
-      <AppDownloadBanner />
+      <AppDownloadBanner className="lg:-mt-[var(--app-download-bar)]" />
+      </div>
       <Footer onContactClick={onContactClick} />
     </div>
   )

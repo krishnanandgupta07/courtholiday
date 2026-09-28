@@ -4,6 +4,11 @@ export interface ApiBench {
   name: string
   benchName: string
   benchType: string | null
+  stateId?: number | null
+  stateName?: string | null
+  stateCode?: string | null
+  districtId?: number | null
+  districtName?: string | null
 }
 
 /** Court group returned by GET /api/app/courts/list */
@@ -70,6 +75,12 @@ export interface BenchOption {
   id: number
   name: string
   benchType: string | null
+  courtName?: string
+  stateId?: number | null
+  stateName?: string | null
+  stateCode?: string | null
+  districtId?: number | null
+  districtName?: string | null
 }
 
 /** Top-level court system filter (radio group under header) */

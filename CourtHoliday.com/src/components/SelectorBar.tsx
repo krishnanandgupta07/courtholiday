@@ -18,6 +18,9 @@ interface SelectorBarProps {
   onYearChange: (year: number) => void
   onDateChange: (date: string) => void
   onSubmit: () => void
+  /** Opens the India-map court picker (High Court / District). */
+  onOpenMap?: () => void
+  showMapButton?: boolean
 }
 
 const selectClass =
@@ -44,6 +47,8 @@ export function SelectorBar({
   onYearChange,
   onDateChange,
   onSubmit,
+  onOpenMap,
+  showMapButton = false,
 }: SelectorBarProps) {
   const canSubmitBench =
     Boolean(selectedCourt) && selectedBenchId != null && !holidaysLoading
@@ -100,27 +105,40 @@ export function SelectorBar({
       ) : (
         <>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
-            <label className="block sm:col-span-2 lg:col-span-1">
-              <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
-                Court Name
-              </span>
-              <select
-                className={selectClass}
-                value={selectedCourt}
-                disabled={courtsLoading || courts.length === 0}
-                onChange={(e) => onCourtChange(e.target.value)}
-                aria-busy={courtsLoading}
-              >
-                <option value="">
-                  {courtsLoading ? 'Loading courts…' : 'Choose a court'}
-                </option>
-                {courts.map((court) => (
-                  <option key={court.courtName} value={court.courtName}>
-                    {court.courtName}
+            <div className="sm:col-span-2 lg:col-span-1">
+              <label className="block">
+                <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">
+                  Court Name
+                </span>
+                <select
+                  className={selectClass}
+                  value={selectedCourt}
+                  disabled={courtsLoading || courts.length === 0}
+                  onChange={(e) => onCourtChange(e.target.value)}
+                  aria-busy={courtsLoading}
+                >
+                  <option value="">
+                    {courtsLoading ? 'Loading courts…' : 'Choose a court'}
                   </option>
-                ))}
-              </select>
-            </label>
+                  {courts.map((court) => (
+                    <option key={court.courtName} value={court.courtName}>
+                      {court.courtName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {showMapButton ? (
+                <button
+                  type="button"
+                  onClick={onOpenMap}
+                  disabled={courtsLoading}
+                  className="mt-1.5 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-sm border border-brassLight/70 bg-parchment px-3 py-1.5 font-body text-sm font-semibold text-navy transition hover:border-brass hover:bg-parchmentDim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-2 focus-visible:ring-offset-parchment disabled:cursor-not-allowed disabled:opacity-55"
+                  aria-haspopup="dialog"
+                >
+                  Choose on map
+                </button>
+              ) : null}
+            </div>
 
             <label className="block">
               <span className="mb-1 block font-body text-[11px] font-medium uppercase tracking-wide text-inkSoft">

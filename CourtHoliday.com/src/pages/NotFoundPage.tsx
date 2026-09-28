@@ -21,6 +21,7 @@ export function NotFoundPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
+      <div className="relative flex min-h-0 flex-1 flex-col">
       <SEO
         title={seo.title}
         description={seo.description}
@@ -63,6 +64,7 @@ export function NotFoundPage() {
         </div>
       </main>
       <AppDownloadBanner />
+      </div>
       <Footer />
     </div>
   )

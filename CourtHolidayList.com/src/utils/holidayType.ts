@@ -1,23 +1,19 @@
 import type { HolidayType } from '../types/api'
 
-const RESTRICTED_EXACT = new Set([
-  'sunday',
-  'second saturday',
-  'local holiday',
-])
-
 /**
  * CourtLiveStream holidays have no type field. Classify from description:
- * routine closures / local holidays → restricted; named gazetted days → gazetted.
+ * Sunday, any Saturday closure, local holiday, and winter holiday → restricted.
+ * Named days (Janmashtami, Vinayaka Chavithi, Samvatsari, …) → gazetted / public.
  */
 export function classifyHolidayType(description: string): HolidayType {
   const normalized = description.trim().toLowerCase()
-  if (RESTRICTED_EXACT.has(normalized)) return 'restricted'
+  if (normalized.includes('sunday')) return 'restricted'
+  if (normalized.includes('saturday')) return 'restricted'
   if (normalized.includes('local holiday')) return 'restricted'
-  if (normalized.startsWith('winter holiday')) return 'restricted'
+  if (normalized.includes('winter holiday')) return 'restricted'
   return 'gazetted'
 }
 
 export function holidayTypeLabel(type: HolidayType): string {
-  return type === 'gazetted' ? 'Gazetted' : 'Restricted'
+  return type === 'gazetted' ? 'Public holiday' : 'Sunday / Saturday'
 }

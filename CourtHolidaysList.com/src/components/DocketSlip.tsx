@@ -20,7 +20,7 @@ export function DocketSlip({ holiday, highlighted = false }: DocketSlipProps) {
     <article
       className={`group flex items-center gap-2 border bg-parchment px-2 py-1.5 shadow-slip transition hover:border-brass/60 ${
         highlighted
-          ? 'border-sage/60 ring-1 ring-sage/25'
+          ? 'border-navy/60 ring-1 ring-navy/25'
           : 'border-brassLight/50'
       }`}
       aria-label={`${holiday.name}, ${holiday.date}`}
@@ -28,17 +28,17 @@ export function DocketSlip({ holiday, highlighted = false }: DocketSlipProps) {
       <div
         className={`flex w-11 shrink-0 flex-col items-center justify-center border-r border-dashed pr-2 ${
           isGazetted
-            ? 'border-burgundy/40 text-burgundy'
-            : 'border-brass/50 text-brass'
+            ? 'border-[#B42318]/40 text-[#B42318]'
+            : 'border-[#9A6B2F]/50 text-[#9A6B2F]'
         }`}
       >
-        <span className="font-mono text-[9px] uppercase tracking-wide text-inkSoft">
+        <span className="font-mono text-[9px] uppercase tracking-wide">
           {monthShort}
         </span>
         <span className="font-mono text-lg font-semibold leading-none">
           {String(dayNum).padStart(2, '0')}
         </span>
-        <span className="font-mono text-[9px] text-inkSoft">
+        <span className="font-mono text-[9px] opacity-80">
           {holiday.day.slice(0, 3)}
         </span>
       </div>

@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --app-download-bar: 2.75rem;
+}
+
 @layer base {
   html {
     @apply scroll-smooth antialiased;
@@ -47,6 +51,147 @@
 
     .disclaimer-marquee-track > p[aria-hidden='true'] {
       display: none;
+    }
+  }
+}
+
+/* Same download promo motion as courtholiday.com. Off when the user prefers less motion. */
+@layer utilities {
+  @keyframes app-promo-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(173, 138, 78, 0.18);
+    }
+    50% {
+      box-shadow: 0 0 18px 3px rgba(217, 196, 149, 0.55);
+    }
+  }
+
+  @keyframes app-promo-attention {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    18% {
+      transform: scale(1.06);
+    }
+    36% {
+      transform: scale(1);
+    }
+    54% {
+      transform: scale(1.045);
+    }
+    72% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes app-promo-shimmer {
+    0% {
+      opacity: 0;
+      transform: translateX(-140%) skewX(-18deg);
+    }
+    18% {
+      opacity: 0.75;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(260%) skewX(-18deg);
+    }
+  }
+
+  @keyframes app-promo-border {
+    0%,
+    100% {
+      border-color: rgba(173, 138, 78, 0.7);
+      box-shadow: 0 0 0 0 rgba(173, 138, 78, 0.15);
+    }
+    50% {
+      border-color: #d9c495;
+      box-shadow: 0 0 10px 1px rgba(217, 196, 149, 0.5);
+    }
+  }
+
+  @keyframes app-promo-dot {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(217, 196, 149, 0.7);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.25);
+      box-shadow: 0 0 0 6px rgba(217, 196, 149, 0);
+    }
+  }
+
+  @keyframes app-promo-nudge {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-2px);
+    }
+  }
+
+  .app-promo-cluster {
+    animation:
+      app-promo-attention 2.2s ease-out 0.35s 2,
+      app-promo-glow 2.4s ease-in-out 4.8s infinite;
+  }
+
+  .app-get-app-btn {
+    animation:
+      app-promo-attention 2s ease-out 0.25s 3,
+      app-promo-glow 2.2s ease-in-out 6.3s infinite;
+  }
+
+  .app-store-badge {
+    position: relative;
+    animation: app-promo-border 2.2s ease-in-out infinite;
+  }
+
+  .app-store-badge::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: -20% auto -20% 0;
+    width: 42%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(246, 241, 230, 0.38),
+      transparent
+    );
+    animation: app-promo-shimmer 2.8s ease-in-out 0.6s infinite;
+  }
+
+  .app-promo-live-dot {
+    animation: app-promo-dot 1.4s ease-in-out infinite;
+  }
+
+  .app-promo-icon {
+    animation: app-promo-nudge 1.6s ease-in-out infinite;
+  }
+
+  .app-promo-banner {
+    animation:
+      app-promo-attention 2.2s ease-out 0.6s 2,
+      app-promo-glow 2.4s ease-in-out 5s infinite,
+      app-promo-border 2.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-promo-cluster,
+    .app-get-app-btn,
+    .app-store-badge,
+    .app-store-badge::after,
+    .app-promo-live-dot,
+    .app-promo-icon,
+    .app-promo-banner {
+      animation: none;
     }
   }
 }

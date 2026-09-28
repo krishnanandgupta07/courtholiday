@@ -105,6 +105,11 @@ export function useHolidays() {
     [benchesByCourt, selectedCourt],
   )
 
+  const allBenches = useMemo(
+    () => Object.values(benchesByCourt).flat(),
+    [benchesByCourt],
+  )
+
   const selectedCourtRef = useRef(selectedCourt)
   selectedCourtRef.current = selectedCourt
 
@@ -248,6 +253,7 @@ export function useHolidays() {
     years,
     courts,
     benches,
+    allBenches,
     courtsState,
     reloadCourts: loadCourts,
     selectedCourt,

@@ -9,7 +9,10 @@ export function Footer({ onContactClick }: FooterProps) {
     'underline-offset-2 transition hover:text-brassLight hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass'
 
   return (
-    <footer className="mt-auto shrink-0 bg-navyDeep text-parchment">
+    <footer
+      data-site-footer
+      className="mt-auto shrink-0 bg-navyDeep text-parchment"
+    >
       <div className="w-full px-3 py-3 sm:px-4 md:px-6 lg:px-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="max-w-md">

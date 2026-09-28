@@ -199,7 +199,8 @@ export function ContactUsPage({ onBack, onOpenContact }: ContactUsPageProps) {
   }, [successMessage, onBack])
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
+    <div className="flex min-h-screen w-full min-w-0 flex-col bg-parchment bg-parchment-grid bg-grid text-ink">
+      <div className="flex w-full min-w-0 flex-1 flex-col">
       <header className="shrink-0 border-b border-brassLight/25 bg-masthead text-parchment">
         <div className="flex w-full items-center justify-between gap-3 px-3 py-2.5 sm:px-4 md:px-6 lg:px-8">
           <button
@@ -470,6 +471,7 @@ export function ContactUsPage({ onBack, onOpenContact }: ContactUsPageProps) {
       ) : null}
 
       <AppDownloadBanner />
+      </div>
       <Footer onContactClick={onOpenContact ?? (() => undefined)} />
     </div>
   )

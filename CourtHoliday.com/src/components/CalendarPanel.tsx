@@ -7,6 +7,7 @@ import {
   formatMonthName,
   formatMonthYear,
 } from '../utils/calendar'
+import { HolidayLegend } from './HolidayLegend'
 
 interface CalendarPanelProps {
   holidays: Holiday[]
@@ -130,19 +131,19 @@ function MonthDayGrid({
                   ? 'min-h-[0.9rem] items-center justify-center p-0'
                   : compact
                     ? 'min-h-[0.85rem] items-center justify-center p-0'
-                    : 'min-h-[3.25rem] p-0.5 sm:min-h-[2.75rem] sm:p-1 md:min-h-[3rem] md:p-1',
+                    : 'min-h-[2.6rem] p-0.5 sm:min-h-[2.75rem] sm:p-1 md:min-h-[3rem] md:p-1',
                 cell.isToday
-                  ? 'border-sage ring-1 ring-sage/40 md:ring-2'
-                  : 'border-brassLight/40',
-                yearView
-                  ? hasHoliday
-                    ? 'bg-parchment hover:bg-burgundyDim/90'
-                    : 'bg-parchment'
+                  ? 'border-navy ring-1 ring-navy/40 md:ring-2'
                   : isGazetted
-                    ? 'bg-burgundyDim/80'
+                    ? 'border-[#B42318]/80'
                     : isRestricted
-                      ? 'bg-brassLight/35'
-                      : 'bg-parchment',
+                      ? 'border-[#9A6B2F]/80'
+                      : 'border-brassLight/40',
+                isGazetted
+                  ? 'bg-[#B42318] hover:bg-[#9B1C1C]'
+                  : isRestricted
+                    ? 'bg-[#9A6B2F] hover:bg-[#855C28]'
+                    : 'bg-parchment',
                 isClickable
                   ? 'cursor-pointer transition hover:border-brass hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass'
                   : hasHoliday && !isYearCompact
@@ -160,37 +161,28 @@ function MonthDayGrid({
                     : compact
                       ? 'text-[7px] leading-none'
                       : 'text-[11px] sm:text-xs md:text-sm',
-                  cell.isToday
-                    ? 'font-bold text-sage'
-                    : yearView
-                      ? hasHoliday
-                        ? 'text-burgundy'
-                        : 'text-ink'
-                      : isGazetted
-                        ? 'text-burgundy'
-                        : 'text-ink',
+                  hasHoliday
+                    ? 'font-semibold text-parchment'
+                    : cell.isToday
+                      ? 'font-bold text-navy'
+                      : 'text-ink',
                 ].join(' ')}
               >
                 {cell.day}
               </span>
               {hasHoliday && yearView && (
                 <span
-                  className="mt-px h-0.5 w-0.5 rounded-full bg-burgundy/70"
+                  className="mt-px h-0.5 w-0.5 rounded-full bg-parchment/90"
                   aria-hidden
                 />
               )}
               {!isYearCompact && primary && (
-                <span
-                  className={[
-                    'mt-0.5 line-clamp-2 text-[8px] leading-tight font-body sm:text-[9px] md:mt-1 md:text-[10px]',
-                    isGazetted ? 'text-burgundy' : 'text-[#6F5630]',
-                  ].join(' ')}
-                >
+                <span className="mt-0.5 line-clamp-2 text-[8px] leading-tight font-body text-parchment/95 sm:text-[9px] md:mt-1 md:text-[10px]">
                   {primary.name}
                 </span>
               )}
               {!isYearCompact && cell.holidays.length > 1 && (
-                <span className="mt-auto font-mono text-[8px] text-inkSoft sm:text-[9px]">
+                <span className="mt-auto font-mono text-[8px] text-parchment/80 sm:text-[9px]">
                   +{cell.holidays.length - 1}
                 </span>
               )}
@@ -368,6 +360,10 @@ export function CalendarPanel({
           </div>
         )}
       </div>
+
+      <footer className="shrink-0 border-t border-brassLight/40 bg-parchment px-2.5 py-1.5">
+        <HolidayLegend />
+      </footer>
     </section>
   )
 }

@@ -1,4 +1,5 @@
 import type {
+  ApiBench,
   ApiHoliday,
   BenchOption,
   ContactUsPayload,
@@ -25,10 +26,26 @@ async function fetchJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>
 }
 
+function mapBench(courtName: string, bench: ApiBench): BenchOption {
+  const stateCode = bench.stateCode?.trim().toUpperCase() || null
+  return {
+    id: bench.id,
+    name: bench.benchName || bench.name,
+    benchType: bench.benchType,
+    courtName,
+    stateId: bench.stateId ?? null,
+    stateName: bench.stateName ?? null,
+    stateCode,
+    districtId: bench.districtId ?? null,
+    districtName: bench.districtName ?? null,
+  }
+}
+
 /** API call #1 — load courts and nested benches on mount */
 export async function fetchCourtsList(): Promise<{
   courts: CourtOption[]
   benchesByCourt: Record<string, BenchOption[]>
+  benches: BenchOption[]
 }> {
   // GET https://api.courtlivestream.com/api/app/courts/list
   const payload = await fetchJson<CourtsListResponse>(
@@ -41,22 +58,24 @@ export async function fetchCourtsList(): Promise<{
 
   const courts: CourtOption[] = []
   const benchesByCourt: Record<string, BenchOption[]> = {}
+  const benches: BenchOption[] = []
 
   for (const court of payload.data) {
     courts.push({ courtName: court.courtName })
-    benchesByCourt[court.courtName] = (court.benches ?? []).map((bench) => ({
-      id: bench.id,
-      name: bench.benchName || bench.name,
-      benchType: bench.benchType,
-    }))
+    const mapped = (court.benches ?? []).map((bench) =>
+      mapBench(court.courtName, bench),
+    )
+    benchesByCourt[court.courtName] = mapped
+    benches.push(...mapped)
   }
 
   courts.sort((a, b) => a.courtName.localeCompare(b.courtName))
+  benches.sort((a, b) => a.name.localeCompare(b.name))
   for (const key of Object.keys(benchesByCourt)) {
     benchesByCourt[key].sort((a, b) => a.name.localeCompare(b.name))
   }
 
-  return { courts, benchesByCourt }
+  return { courts, benchesByCourt, benches }
 }
 
 function mapHoliday(raw: ApiHoliday): Holiday {
